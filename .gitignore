@@ -2,6 +2,10 @@
 logs/
 *.log
 
+# Data (generated)
+data/
+*.json
+
 # Temporary files
 tmp/
 *.tmp
@@ -10,9 +14,3 @@ tmp/
 __pycache__/
 *.py[cod]
 .env
-
-# Keep data/ tracked, ignore other JSON
-!data/
-*.json
-!data/*.json
-!data/reports.json
