@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日论文推送 - {{push_date}} - EvilCalf</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #a855f7;
+            --secondary: #6366f1;
+            --accent: #ec4899;
+            --glow: #c084fc;
+            --bg-dark: #0f0c29;
+            --card-bg: rgba(30, 30, 50, 0.8);
+            --sidebar-width: 280px;
+        }
+        
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a1a2e);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #fff;
+            display: flex;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* 侧边栏 */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background: rgba(15, 12, 41, 0.95);
+            border-right: 1px solid rgba(168, 85, 247, 0.3);
+            overflow-y: auto;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+        
+        /* 隐藏侧边栏滚动条但保留功能 */
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(15, 12, 41, 0.3);
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(168, 85, 247, 0.5);
+            border-radius: 2px;
+        }
+        
+        .sidebar-header {
+            padding: 30px 20px;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.1));
+        }
+        
+        .sidebar-header h2 {
+            font-size: 1.3em;
+            background: linear-gradient(135deg, #fff, var(--glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        
+        .sidebar-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .toc-section {
+            padding: 15px 0;
+        }
+        
+        .toc-section-title {
+            padding: 10px 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: var(--glow);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-left: 3px solid var(--primary);
+            margin: 10px 0;
+            background: linear-gradient(90deg, rgba(168, 85, 247, 0.1), transparent);
+            cursor: pointer;
+        }
+        
+        .toc-item {
+            padding: 10px 20px 10px 35px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            font-size: 0.8em;
+            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .toc-item:hover {
+            background: rgba(168, 85, 247, 0.1);
+            border-left-color: var(--primary);
+            color: #fff;
+        }
+        
+        .toc-item.active {
+            background: rgba(168, 85, 247, 0.2);
+            border-left-color: var(--accent);
+            color: #fff;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 40px;
+            min-height: 100vh;
+        }
+        
+        .welcome-banner {
+            text-align: center;
+            padding: 80px 40px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            margin-bottom: 40px;
+        }
+        
+        .welcome-banner h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #fff, var(--glow), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+        
+        /* 论文卡片 */
+        .paper-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .paper-card:hover {
+            border-color: rgba(168, 85, 247, 0.5);
+            box-shadow: 0 10px 40px rgba(168, 85, 247, 0.2);
+        }
+        
+        .paper-title {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            background: linear-gradient(135deg, #fff, var(--glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .paper-chinese-title {
+            font-size: 0.95em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .paper-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85em;
+            margin-bottom: 20px;
+        }
+        
+        .paper-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .paper-brief {
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95em;
+            margin-bottom: 20px;
+        }
+        
+        .arxiv-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 20px;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+        
+        .arxiv-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(168, 85, 247, 0.4);
+        }
+        
+        .expand-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.15));
+            border: 2px solid rgba(168, 85, 247, 0.4);
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .expand-btn:hover {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(236, 72, 153, 0.25));
+            border-color: rgba(168, 85, 247, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(168, 85, 247, 0.3);
+        }
+        
+        .expand-btn.active #expand-btn-icon {
+            transform: rotate(180deg);
+        }
+        
+        #expand-btn-icon {
+            transition: transform 0.3s ease;
+            margin-left: 8px;
+            font-size: 0.9em;
+        }
+        
+        .details-content {
+            display: none;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(168, 85, 247, 0.3);
+        }
+        
+        .summary-block {
+            margin-bottom: 30px;
+        }
+        
+        .summary-block h4 {
+            color: var(--glow);
+            margin-bottom: 15px;
+            font-size: 1.15em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .markdown-content {
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9em;
+        }
+        
+        .markdown-content p {
+            margin-bottom: 15px;
+        }
+        
+        .markdown-content ul, .markdown-content ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .markdown-content li {
+            margin-bottom: 8px;
+        }
+        
+        .markdown-content h4 {
+            color: var(--glow);
+            margin: 25px 0 15px 0;
+            font-size: 1.1em;
+        }
+        
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(30, 30, 50, 0.5);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .markdown-content th, .markdown-content td {
+            padding: 12px 15px;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            text-align: left;
+        }
+        
+        .markdown-content th {
+            background: rgba(168, 85, 247, 0.3);
+            font-weight: 600;
+        }
+        
+        .markdown-content tr:hover {
+            background: rgba(168, 85, 247, 0.1);
+        }
+        
+        .markdown-content code {
+            background: rgba(168, 85, 247, 0.2);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+        
+        .markdown-content pre {
+            background: rgba(15, 12, 41, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+        
+        .markdown-content pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .markdown-content blockquote {
+            border-left: 4px solid var(--accent);
+            padding-left: 20px;
+            margin: 20px 0;
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+        }
+        
+        .markdown-content strong {
+            color: var(--glow);
+            font-weight: 600;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 20px;
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            margin-right: 10px;
+        }
+        
+        .back-btn:hover {
+            background: rgba(168, 85, 247, 0.3);
+            transform: translateX(-5px);
+        }
+        
+        .home-btn-small {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(236, 72, 153, 0.2));
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 10px;
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2em;
+        }
+        
+        .home-btn-small:hover {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.5), rgba(236, 72, 153, 0.3));
+            transform: scale(1.1);
+            box-shadow: 0 3px 15px rgba(168, 85, 247, 0.4);
+        }
+        
+        /* 滚动条 */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(15, 12, 41, 0.5);
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(168, 85, 247, 0.5);
+            border-radius: 3px;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(168, 85, 247, 0.7);
+        }
+        
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .menu-toggle {
+                display: block;
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 200;
+                padding: 10px 15px;
+                background: var(--card-bg);
+                border: 1px solid rgba(168, 85, 247, 0.3);
+                border-radius: 10px;
+                cursor: pointer;
+            }
+        }
+        
+        @media (min-width: 1025px) {
+            .menu-toggle {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-toggle" onclick="toggleSidebar()">☰ 目录</div>
+    
+    <!-- 侧边栏 -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                <h2>📚 论文推送</h2>
+                <a href="index.html" class="home-btn-small" title="返回主页">🏠</a>
+            </div>
+            <div class="sidebar-stats">
+                <span id="stat-date">{{push_date}}</span>
+                <span id="stat-count">{{total_count}} 篇</span>
+            </div>
+        </div>
+        <div class="toc-section" id="toc-container">
+            <!-- 动态生成目录 -->
+        </div>
+    </aside>
+    
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 欢迎横幅 -->
+        <div class="welcome-banner" id="welcome-banner">
+            <h1>📖 每日论文推送</h1>
+            <p>点击左侧目录查看论文详情，支持 Markdown 渲染和目录导航</p>
+            <p style="margin-top: 20px; font-size: 0.9em; color: rgba(255,255,255,0.5);">日期：<span id="welcome-date">{{push_date}}</span></p>
+        </div>
+        
+        <!-- 论文列表 -->
+        <div id="papers-container" style="display: none;">
+            <!-- 动态生成论文卡片 -->
+        </div>
+    </main>
+    
+    <script>
+        // 论文数据
+        let papersData = null;
+        let currentDate = null;
+        
+        // 章节映射
+        const sectionMap = {
+            '1': { emoji: '📋', title: 'Paper Snapshot' },
+            '2': { emoji: '🎯', title: '研究目标' },
+            '3': { emoji: '💡', title: '方法概述' },
+            '4': { emoji: '📊', title: '数据和评估' },
+            '5': { emoji: '📈', title: '关键结果' },
+            '6': { emoji: '✨', title: '优势' },
+            '7': { emoji: '⚠️', title: '局限性' },
+            '8': { emoji: '🔧', title: '可重复性' },
+            '9': { emoji: '💼', title: '实践启示' },
+            '10': { emoji: '📝', title: '简要结论' }
+        };
+        
+        // 加载数据
+        async function loadData() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                currentDate = urlParams.get('date') || '{{push_date}}';
+                const response = await fetch(`data/${currentDate}.json`);
+                papersData = await response.json();
+                renderTOC();
+                renderPapers();
+                document.getElementById('stat-count').textContent = `${papersData.total_count} 篇`;
+                document.getElementById('stat-date').textContent = currentDate;
+                document.getElementById('welcome-date').textContent = currentDate;
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                document.getElementById('toc-container').innerHTML = 
+                    '<div style="padding: 20px; color: #ff6b6b;">加载数据失败，请检查数据文件是否存在</div>';
+            }
+        }
+        
+        // 渲染目录
+        function renderTOC() {
+            const container = document.getElementById('toc-container');
+            let html = '';
+            
+            papersData.categories.forEach((cat, catIndex) => {
+                const catName = cat.name;
+                const papers = cat.papers;
+                
+                html += `
+                    <div class="toc-section-title" onclick="toggleSection('cat-${catIndex}')">
+                        ${catName}
+                    </div>
+                    <div id="cat-${catIndex}">
+                `;
+                
+                papers.forEach((paper, paperIndex) => {
+                    const uniqueId = `cat-${catIndex}-paper-${paperIndex}`;
+                    const chineseTitle = paper.chinese_title || '';
+                    const displayTitle = chineseTitle || truncateTitle(paper.title, 50);
+                    
+                    html += `
+                        <div class="toc-item" onclick="scrollToPaper('${uniqueId}')" data-id="${uniqueId}">
+                            <span class="paper-emoji">📄</span>
+                            <span class="paper-title-short">${truncateTitle(displayTitle, 40)}</span>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // 渲染论文列表
+        function renderPapers() {
+            const container = document.getElementById('papers-container');
+            let html = '';
+            
+            papersData.categories.forEach((cat, catIndex) => {
+                cat.papers.forEach((paper, paperIndex) => {
+                    const uniqueId = `cat-${catIndex}-paper-${paperIndex}`;
+                    const chineseTitle = paper.chinese_title || '';
+                    
+                    html += `
+                        <div class="paper-card" id="${uniqueId}">
+                            <h3 class="paper-title">${paper.title}</h3>
+                            ${chineseTitle ? `<div class="paper-chinese-title">${chineseTitle}</div>` : ''}
+                            <div class="paper-meta">
+                                <span>📅 ${paper.published}</span>
+                                <span>🏷️ ${paper.category}</span>
+                                <span>📄 ${paper.arxiv_id}</span>
+                            </div>
+                            <div class="paper-brief">${paper.brief}</div>
+                            <a href="${paper.link}" class="arxiv-link" target="_blank">📄 查看 ArXiv 原文</a>
+                            <button class="expand-btn" onclick="toggleDetails('${uniqueId}')">
+                                <span id="expand-btn-text-${uniqueId}">🔍 查看深度解读</span>
+                                <span id="expand-btn-icon">▼</span>
+                            </button>
+                            <div class="details-content" id="details-${uniqueId}">
+                                ${renderDetails(paper.details)}
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+            
+            container.innerHTML = html;
+            container.style.display = 'block';
+            document.getElementById('welcome-banner').style.display = 'none';
+        }
+        
+        // 渲染深度解读
+        function renderDetails(details) {
+            const sections = [
+                { key: 'research_goal', emoji: '🎯', title: '研究目标' },
+                { key: 'method', emoji: '💡', title: '方法概述' },
+                { key: 'results', emoji: '📈', title: '关键结果' },
+                { key: 'conclusion', emoji: '📝', title: '结论' }
+            ];
+            
+            let html = '';
+            sections.forEach(section => {
+                const content = details[section.key];
+                if (content && content.trim()) {
+                    html += `
+                        <div class="summary-block">
+                            <h4>${section.emoji} ${section.title}</h4>
+                            <div class="markdown-content">${content}</div>
+                        </div>
+                    `;
+                }
+            });
+            
+            return html;
+        }
+        
+        // 滚动到论文
+        function scrollToPaper(uniqueId) {
+            const element = document.getElementById(uniqueId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                highlightTOC(uniqueId);
+            }
+        }
+        
+        // 高亮目录项
+        function highlightTOC(uniqueId) {
+            document.querySelectorAll('.toc-item').forEach(item => item.classList.remove('active'));
+            document.querySelector(`[data-id="${uniqueId}"]`)?.classList.add('active');
+        }
+        
+        // 获取当前可见的论文
+        function getVisiblePaper() {
+            const cards = document.querySelectorAll('.paper-card');
+            const viewportHeight = window.innerHeight;
+            const scrollPosition = window.scrollY + viewportHeight / 3;
+            
+            for (let card of cards) {
+                const rect = card.getBoundingClientRect();
+                const cardTop = rect.top + window.scrollY;
+                const cardBottom = cardTop + rect.height;
+                
+                if (scrollPosition >= cardTop && scrollPosition <= cardBottom) {
+                    return card.id;
+                }
+            }
+            return null;
+        }
+        
+        // 监听滚动，自动高亮目录
+        let ticking = false;
+        
+        function updateSidebar() {
+            const visiblePaper = getVisiblePaper();
+            if (visiblePaper) {
+                highlightTOC(visiblePaper);
+                
+                // 确保高亮的目录项在侧边栏可见范围内
+                const activeItem = document.querySelector(`[data-id="${visiblePaper}"]`);
+                if (activeItem) {
+                    const sidebar = document.getElementById('sidebar');
+                    const itemTop = activeItem.offsetTop;
+                    const itemBottom = itemTop + activeItem.offsetHeight;
+                    const sidebarTop = sidebar.scrollTop;
+                    const sidebarBottom = sidebarTop + sidebar.offsetHeight;
+                    
+                    // 如果高亮项不在可视范围内，滚动到它
+                    if (itemTop < sidebarTop) {
+                        sidebar.scrollTop = itemTop - 20;
+                    } else if (itemBottom > sidebarBottom) {
+                        sidebar.scrollTop = itemBottom - sidebar.offsetHeight + 20;
+                    }
+                }
+            }
+            ticking = false;
+        }
+        
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                window.requestAnimationFrame(updateSidebar);
+                ticking = true;
+            }
+        });
+        
+        // 初始化时更新一次
+        window.addEventListener('load', function() {
+            setTimeout(updateSidebar, 500);
+        });
+        
+        // 切换深度解读显示/隐藏
+        function toggleDetails(uniqueId) {
+            const detailsContent = document.getElementById(`details-${uniqueId}`);
+            const expandBtn = document.getElementById(`details-${uniqueId}`).previousElementSibling;
+            const expandText = document.getElementById(`expand-btn-text-${uniqueId}`);
+            
+            if (detailsContent.style.display === 'none') {
+                detailsContent.style.display = 'block';
+                expandBtn.classList.add('active');
+                expandText.textContent = '🔼 收起深度解读';
+            } else {
+                detailsContent.style.display = 'none';
+                expandBtn.classList.remove('active');
+                expandText.textContent = '🔍 查看深度解读';
+            }
+        }
+        
+        // 截断标题
+        function truncateTitle(title, maxLength = 40) {
+            if (title.length <= maxLength) return title;
+            return title.substring(0, maxLength) + '...';
+        }
+        
+        // 切换分类展开/折叠
+        function toggleSection(id) {
+            const section = document.getElementById(id);
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
+        }
+        
+        // 切换侧边栏（移动端）
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Logs
+logs/
+*.log
+
+# Data files (generated)
+data/
+*.json
+
+# Temporary files
+tmp/
+*.tmp
+
+# Python
+__pycache__/
+*.py[cod]
+.env
