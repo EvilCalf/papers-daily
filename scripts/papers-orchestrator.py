@@ -368,6 +368,8 @@ def interpret_papers(run_dir, push_date, language="Chinese"):
         bool: 是否成功
     """
     logger.info(f"\n🧠 Stage B.2: AI 解读论文")
+    logger.info(f"   并行策略：3 subagent × 4 篇/批 = 12 篇/轮")
+    logger.info(f"   批次间隔：2 秒（避免 gateway 拥塞）")
     start_time = time.time()
     
     script_path = Path(__file__).parent / "interpret-papers-parallel.py"
