@@ -12,7 +12,7 @@ _最后更新：2026-03-18 | 系统状态：✅ 生产环境_
 2. **深度解读**: 基于全文（TeX 源码）的 10 节学术格式解读（2000-3000 字/篇）
 3. **网页生成**: 深色渐变风格 + 粒子动画 + 可展开详情
 4. **动态主页**: JS 动态读取 `reports.json` 展示最新推送和历史记录
-5. **自动推送**: 每天 23:00 检索（不判断周末），23:30 推送（cron + heartbeat 双保险）
+5. **自动推送**: 每天 10:00 检索前一天的论文（周末跳过），heartbeat 备份检查（cron + heartbeat 双保险）
 6. **无论文处理**: 搜不到时生成"今天没论文"空页面（有 UI 有样式）
 
 ---
@@ -27,7 +27,7 @@ _最后更新：2026-03-18 | 系统状态：✅ 生产环境_
 ## 🔄 完整链路
 
 ```
-Cron 触发 (23:00) → 检索 arXiv → AI 解读 (10 节) → 生成网页 → 同步 reports.json → 用户访问主页
+Cron 触发 (10:00) → 检索 arXiv → AI 解读 (10 节) → 生成网页 → 同步 reports.json → 用户访问主页
 ```
 
 **详细说明**: 见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
@@ -56,9 +56,9 @@ python3 /root/.openclaw/workspace/projects/papers-daily/scripts/orchestrator-to-
 ### 自动触发（生产环境）
 
 ```bash
-# Cron 完整流程（每天 23:00）
+# Cron 完整流程（每天 10:00）
 # 执行：Stage A 检索 → Stage B 解读 → Stage C 网页生成
-0 23 * * * /bin/bash /root/.openclaw/workspace/projects/papers-daily/scripts/daily-papers-cron.sh
+0 10 * * * /bin/bash /root/.openclaw/workspace/projects/papers-daily/scripts/daily-papers-cron.sh
 
 # Heartbeat 备份检查（定期）
 # 只在 cron 失败或错过时间窗口时执行
@@ -191,8 +191,8 @@ papers-daily/
 # 查看当前配置
 crontab -l
 
-# 添加每日论文检索（23:00）
-0 23 * * * /bin/bash /root/.openclaw/workspace/projects/papers-daily/scripts/daily-papers-cron.sh >> /root/.openclaw/workspace/projects/papers-daily/logs/papers-cron.log 2>&1
+# 添加每日论文检索（10:00）
+0 10 * * * /bin/bash /root/.openclaw/workspace/projects/papers-daily/scripts/daily-papers-cron.sh >> /root/.openclaw/workspace/projects/papers-daily/logs/papers-cron.log 2>&1
 ```
 
 ### HEARTBEAT.md 配置
@@ -200,14 +200,14 @@ crontab -l
 编辑 `/root/.openclaw/workspace/HEARTBEAT.md`:
 
 ```markdown
-## 📚 检查论文推送任务（每天 23:30-24:00，错过时间窗口则立即执行）
+## 📚 检查论文推送任务（每天 10:00-10:30，错过时间窗口则立即执行）
 
 **任务**: 检查并执行每日论文推送
 
 **执行脚本**:
 python3 /root/.openclaw/workspace/projects/papers-daily/scripts/papers-heartbeat-check.py
 
-**频率**: 每天检查 1 次（23:30-24:00 之间），错过时间窗口则发现任务立即执行
+**频率**: 每天检查 1 次（10:00-10:30 之间），错过时间窗口则发现任务立即执行
 ```
 
 ---

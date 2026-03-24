@@ -21,7 +21,7 @@
 
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
 │  1. Cron 触发  │───▶│  2. 检索论文  │───▶│  3. AI 解读   │───▶│  4. 生成网页  │
-│  每天 23:00   │    │  arXiv API  │    │  10 节格式   │    │  HTML+JSON   │
+│  每天 10:00   │    │  arXiv API  │    │  10 节格式   │    │  HTML+JSON   │
 └──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
                                                                    │
                                                                    ▼
@@ -83,7 +83,7 @@
 
 ### 1. daily-papers-cron.sh（Cron 入口）
 
-**执行时间**: 每天 23:00  
+**执行时间**: 每天 10:00  
 **功能**: 检索 arXiv 论文 + 下载 PDF/TeX
 
 ```bash
@@ -254,21 +254,21 @@ category_map = {
 ### Crontab 配置
 
 ```bash
-# 每日论文检索（23:00）
-0 23 * * * /bin/bash /root/.openclaw/workspace/projects/papers-daily/scripts/daily-papers-cron.sh >> /root/.openclaw/workspace/projects/papers-daily/logs/papers-cron.log 2>&1
+# 每日论文检索（10:00）
+0 10 * * * /bin/bash /root/.openclaw/workspace/projects/papers-daily/scripts/daily-papers-cron.sh >> /root/.openclaw/workspace/projects/papers-daily/logs/papers-cron.log 2>&1
 ```
 
 ### HEARTBEAT.md 配置
 
 ```markdown
-## 📚 检查论文推送任务（每天 23:30-24:00，错过时间窗口则立即执行）
+## 📚 检查论文推送任务（每天 10:00-10:30，错过时间窗口则立即执行）
 
 **任务**: 检查并执行每日论文推送
 
 **执行脚本**:
 python3 /root/.openclaw/workspace/projects/papers-daily/scripts/papers-heartbeat-check.py
 
-**频率**: 每天检查 1 次（23:30-24:00 之间），错过时间窗口则发现任务立即执行
+**频率**: 每天检查 1 次（10:00-10:30 之间），错过时间窗口则发现任务立即执行
 ```
 
 ### 临时文件清理
