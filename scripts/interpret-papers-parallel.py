@@ -15,10 +15,7 @@ from pathlib import Path
 from datetime import datetime
 
 # 配置
-MAX_PARALLEL_SUBAGENTS = 3  # 推荐配置：3 个 subagent 并行 × 4 篇/批 = 12 篇/轮（稳定）
-BATCH_SIZE = 4  # 每批处理论文数
-BATCH_INTERVAL_SECONDS = 2  # 批次间隔（秒），避免 gateway 拥塞
-MAX_WORKERS = MAX_PARALLEL_SUBAGENTS  # 最大并发数（同 MAX_PARALLEL_SUBAGENTS）
+MAX_WORKERS = 10  # 最大并发数
 TIMEOUT = 900  # 每篇论文超时时间（秒）- 15 分钟，因为要从 TeX 源码提取详细内容（8000-12000 字）
 MODEL = "qwen3.5-plus"  # 使用支持长上下文的模型
 
@@ -242,15 +239,13 @@ def interpret_paper(paper_id, paper_dir, summaries_output_dir, language="Chinese
    - ## 8. 可重复性说明
    - ## 9. 实践启示
    - ## 10. 简要结论（精华总结）
-6. **禁止添加的内容**（违反会导致验证失败）：
+6. **禁止添加的内容**：
    - ❌ 不要写"---"分隔线
    - ❌ 不要写"解读完成"、"生成时间"、"字数统计"等说明
    - ❌ 不要添加时间戳、签名、AI 标记
    - ❌ 不要使用 markdown 以外的标记（如 HTML 标签）
    - ❌ 不要有前言、后记、解释说明
-   - ❌ 不要包含"Gateway agent failed"等错误信息
 7. **直接输出 10 节正文**：从"## 1."开始，到第 10 节结束
-8. **字数要求**：全文应在 2000-4000 字之间，确保每节都有充分内容
 """
         
         # 调用 API
