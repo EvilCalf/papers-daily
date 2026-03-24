@@ -357,7 +357,13 @@ def stage_b_download(run_dir, language="Chinese"):
 @retry(max_attempts=2, delay=10, backoff=2)
 def interpret_papers(run_dir, push_date, language="Chinese"):
     """
-    Stage B.2: AI 解读每篇论文（入口函数 - 调用并行脚本，3 并发×4 篇/批）
+    Stage B.2: AI 解读每篇论文（入口函数 - 调用并行脚本）
+    
+    优化配置：
+    - MAX_PARALLEL_SUBAGENTS = 3（3 个 subagent 并行）
+    - BATCH_SIZE = 4（每批 4 篇论文）
+    - BATCH_INTERVAL_SECONDS = 2（批次间隔 2 秒，避免 gateway 拥塞）
+    - 总吞吐量：12 篇/轮（稳定）
     
     Args:
         run_dir: 运行目录
@@ -368,6 +374,8 @@ def interpret_papers(run_dir, push_date, language="Chinese"):
         bool: 是否成功
     """
     logger.info(f"\n🧠 Stage B.2: AI 解读论文")
+    logger.info(f"   并行策略：3 subagent × 4 篇/批 = 12 篇/轮")
+    logger.info(f"   批次间隔：2 秒（避免 gateway 拥塞）")
     start_time = time.time()
     
     script_path = Path(__file__).parent / "interpret-papers-parallel.py"
