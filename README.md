@@ -20,7 +20,7 @@ _最后更新：2026-03-18 | 系统状态：✅ 生产环境_
 ## 🌐 访问地址
 
 - **主页（动态数据）**: http://evilcalf.online/papers/
-- **今日论文**: http://evilcalf.online/papers/2026-03-18.html
+- **今日论文**: http://evilcalf.online/papers/detail.html?date=2026-03-18
 
 ---
 
