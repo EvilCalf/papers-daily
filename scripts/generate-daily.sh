@@ -90,3 +90,7 @@ echo "📄 访问地址："
 echo "  主页：http://evilcalf.online/papers/"
 echo "  详情：http://evilcalf.online/papers/detail.html?date=$PUSH_DATE"
 echo ""
+
+# 自动同步到 Git 仓库
+echo "🔄 自动同步到 Git 仓库..."
+"$SCRIPTS_DIR/sync-data-to-git.sh" "$PUSH_DATE" "📚 添加每日论文数据：$PUSH_DATE"

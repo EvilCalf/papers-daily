@@ -2,10 +2,6 @@
 logs/
 *.log
 
-# Data (generated)
-data/
-*.json
-
 # Temporary files
 tmp/
 *.tmp
@@ -14,3 +10,6 @@ tmp/
 __pycache__/
 *.py[cod]
 .env
+
+# Local nginx data (not tracked)
+/etc/nginx/html/
