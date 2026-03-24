@@ -223,8 +223,72 @@ def mark_push_done(push_date, paper_date=None, count=0):
     
     log(f"✅ 已标记推送完成：{done_file}")
 
+def validate_summaries_quality(push_date):
+    """验证 summary.md 格式质量"""
+    log(f"🔍 验证 summary.md 格式质量...")
+    
+    summaries_dir = f"{WORKSPACE}/projects/papers-daily/data/summaries/{push_date}"
+    if not os.path.exists(summaries_dir):
+        log(f"   ⚠️  解读目录不存在：{summaries_dir}")
+        return True  # 没有解读文件，跳过验证
+    
+    validate_script = f"{SCRIPTS_DIR}/validate-summary-format.py"
+    if not os.path.exists(validate_script):
+        log(f"   ⚠️  验证脚本不存在，跳过")
+        return True
+    
+    report_file = f"{summaries_dir}/validation_report.json"
+    
+    cmd = [
+        'python3', validate_script,
+        '--summaries-dir', summaries_dir,
+        '--output-report', report_file
+    ]
+    
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    
+    print(result.stdout)
+    if result.stderr:
+        print(result.stderr)
+    
+    # 读取验证报告
+    if os.path.exists(report_file):
+        try:
+            with open(report_file, 'r', encoding='utf-8') as f:
+                report = json.load(f)
+            
+            valid_count = report.get('valid_count', 0)
+            invalid_count = report.get('invalid_count', 0)
+            pass_rate = report.get('pass_rate', 0)
+            
+            log(f"   📊 验证结果：{valid_count}合格 / {invalid_count}不合格 (合格率：{pass_rate*100:.1f}%)")
+            
+            if invalid_count > 0:
+                log(f"   ⚠️  有 {invalid_count} 篇论文格式不合格")
+                # 标记需要重试
+                retry_file = f"{TMP_DIR}/papers-retry-{push_date}.json"
+                with open(retry_file, 'w', encoding='utf-8') as f:
+                    json.dump({
+                        'push_date': push_date,
+                        'papers_to_retry': report.get('papers_to_retry', []),
+                        'timestamp': datetime.now().isoformat()
+                    }, f, ensure_ascii=False, indent=2)
+                log(f"   📝 已标记重试论文：{retry_file}")
+                return False
+        except Exception as e:
+            log(f"   ⚠️  无法解析验证报告：{e}")
+            return True
+    
+    return True
+
 def execute_generate_script(push_date, run_dir):
-    """调用 generate-daily.sh 生成网页"""
+    """调用 generate-daily.sh 生成网页（先验证质量）"""
+    
+    # 先验证 summary.md 格式
+    if not validate_summaries_quality(push_date):
+        log(f"   ⚠️  格式验证未通过，但仍继续生成网页")
+        # 不阻止生成，但记录警告
+    
     log(f"🚀 调用 generate-daily.sh 生成网页...")
     
     cmd = [
