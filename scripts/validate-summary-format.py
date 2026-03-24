@@ -151,7 +151,8 @@ def validate_summary(summary_path):
     
     if empty_sections:
         result['valid'] = False
-        result['errors'].append(f'空章节：{", ".join([f"第{e["section"]}节 ({e["char_count"]}字)" for e in empty_sections])}')
+        section_list = [f"第{e['section']}节 ({e['char_count']}字)" for e in empty_sections]
+        result['errors'].append(f'空章节：{", ".join(section_list)}')
     
     # 3. 检查总字数
     total_chars, chinese_chars, english_words = check_word_count(content)
