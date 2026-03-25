@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: HUydra: Full-Range Lung CT Synthesis via Multiple HU Interval Generative Modelling
+- **作者**: António Cardoso, Pedro Sousa, Tania Pereira, Hélder P. Oliveira
+- **ArXiv ID**: 2603.23041v1
+- **发布日期**: 2026-03-24
+- **主分类**: cs.CV
+- **分类**: cs.CV, cs.AI, cs.LG
+- **摘要**: Currently, a central challenge and bottleneck in the deployment and validation of computer-aided diagnosis (CAD) models within the field of medical imaging is data scarcity. For lung cancer, one of the most prevalent types worldwide, limited datasets can delay diagnosis and have an impact on patient outcome. Generative AI offers a promising solution for this issue, but dealing with the complex distribution of full Hounsfield Unit (HU) range lung CT scans is challenging and remains as a highly computationally demanding task. This paper introduces a novel decomposition strategy that synthesizes CT images one HU interval at a time, rather than modelling the entire HU domain at once. This framework focuses on training generative architectures on individual tissue-focused HU windows, then merges their output into a full-range scan via a learned reconstruction network that effectively reverses the HU-windowing process. We further propose multi-head and multi-decoder models to better capture textures while preserving anatomical consistency, with a multi-head VQVAE achieving the best performance for the generative task. Quantitative evaluation shows this approach significantly outperforms conventional 2D full-range baselines, achieving a 6.2% improvement in FID and superior MMD, Precision, and Recall across all HU intervals. The best performance is achieved by a multi-head VQVAE variant, demonstrating that it is possible to enhance visual fidelity and variability while also reducing model complexity and computational cost. This work establishes a new paradigm for structure-aware medical image synthesis, aligning generative modelling with clinical interpretation.
+- **PDF 链接**: https://arxiv.org/pdf/2603.23041v1

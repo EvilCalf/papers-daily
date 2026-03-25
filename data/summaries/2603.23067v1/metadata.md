@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: MLLM-HWSI: A Multimodal Large Language Model for Hierarchical Whole Slide Image Understanding
+- **作者**: Basit Alawode, Arif Mahmood, Muaz Khalifa Al-Radi, Shahad Albastaki, Asim Khan et al.
+- **ArXiv ID**: 2603.23067v1
+- **发布日期**: 2026-03-24
+- **主分类**: cs.CV
+- **分类**: cs.CV
+- **摘要**: Whole Slide Images (WSIs) exhibit hierarchical structure, where diagnostic information emerges from cellular morphology, regional tissue organization, and global context. Existing Computational Pathology (CPath) Multimodal Large Language Models (MLLMs) typically compress an entire WSI into a single embedding, which hinders fine-grained grounding and ignores how pathologists synthesize evidence across different scales. We introduce \textbf{MLLM-HWSI}, a Hierarchical WSI-level MLLM that aligns visual features with pathology language at four distinct scales, cell as word, patch as phrase, region as sentence, and WSI as paragraph to support interpretable evidence-grounded reasoning. MLLM-HWSI decomposes each WSI into multi-scale embeddings with scale-specific projectors and jointly enforces (i) a hierarchical contrastive objective and (ii) a cross-scale consistency loss, preserving semantic coherence from cells to the WSI. We compute diagnostically relevant patches and aggregate segmented cell embeddings into a compact cellular token per-patch using a lightweight \textit{Cell-Cell Attention Fusion (CCAF)} transformer. The projected multi-scale tokens are fused with text tokens and fed to an instruction-tuned LLM for open-ended reasoning, VQA, report, and caption generation tasks. Trained in three stages, MLLM-HWSI achieves new SOTA results on 13 WSI-level benchmarks across six CPath tasks. By aligning language with multi-scale visual evidence, MLLM-HWSI provides accurate, interpretable outputs that mirror diagnostic workflows and advance holistic WSI understanding. Code is available at: \href{https://github.com/BasitAlawode/HWSI-MLLM}{GitHub}.
+- **PDF 链接**: https://arxiv.org/pdf/2603.23067v1

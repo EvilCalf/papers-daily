@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: Can an LLM Detect Instances of Microservice Infrastructure Patterns?
+- **作者**: Carlos Eduardo Duarte, Neil B. Harrison, Filipe Figueiredo Correia, Ademar Aguiar, Pavlína Gonçalves
+- **ArXiv ID**: 2603.23073v1
+- **发布日期**: 2026-03-24
+- **主分类**: cs.SE
+- **分类**: cs.SE, cs.AI
+- **摘要**: Architectural patterns are frequently found in various software artifacts. The wide variety of patterns and their implementations makes detection challenging with current tools, especially since they often only support detecting patterns in artifacts written in a single language. Large Language Models (LLMs), trained on a diverse range of software artifacts and knowledge, might overcome the limitations of existing approaches. However, their true effectiveness and the factors influencing their performance have not yet been thoroughly examined. To better understand this, we developed MicroPAD. This tool utilizes GPT 5 nano to identify architectural patterns in software artifacts written in any language, based on natural-language pattern descriptions. We used MicroPAD to evaluate an LLM's ability to detect instances of architectural patterns, particularly infrastructure-related microservice patterns. To accomplish this, we selected a set of GitHub repositories and contacted their top contributors to create a new, human-annotated dataset of 190 repositories containing microservice architectural patterns. The results show that MicroPAD was capable of detecting pattern instances across multiple languages and artifact types. The detection performance varied across patterns (F1 scores ranging from 0.09 to 0.70), specifically in relation to their prevalence and the distinctiveness of the artifacts through which they manifest. We also found that patterns associated with recognizable, dominant artifacts were detected more reliably. Whether these findings generalize to other LLMs and tools is a promising direction for future research.
+- **PDF 链接**: https://arxiv.org/pdf/2603.23073v1

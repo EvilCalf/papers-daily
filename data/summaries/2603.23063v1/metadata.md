@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: Machine Learning Models for the Early Detection of Burnout in Software Engineering: a Systematic Literature Review
+- **作者**: Tien Rahayu Tulili, Ayushi Rastogi, Andrea Capiluppi
+- **ArXiv ID**: 2603.23063v1
+- **发布日期**: 2026-03-24
+- **主分类**: cs.SE
+- **分类**: cs.SE, cs.AI, cs.CY, cs.LG
+- **摘要**: Burnout is an occupational syndrome that, like many other professions, affects the majority of software engineers. Past research studies showed important trends, including an increasing use of machine learning techniques to allow for an early detection of burnout.   This paper is a systematic literature review (SLR) of the research papers that proposed machine learning (ML) approaches, and focused on detecting burnout in software developers and IT professionals. Our objective is to review the accuracy and precision of the proposed ML techniques, and to formulate recommendations for future researchers interested to replicate or extend those studies.   From our SLR we observed that a majority of primary studies focuses on detecting emotions or utilise emotional dimensions to detect or predict the presence of burnout. We also performed a cross-sectional study to detect which ML approach shows a better performance at detecting emotions; and which dataset has more potential and expressivity to capture emotions.   We believe that, by identifying which ML tools and datasets show a better performance at detecting emotions, and indirectly at identifying burnout, our paper can be a valuable asset to progress in this important research direction.
+- **PDF 链接**: https://arxiv.org/pdf/2603.23063v1

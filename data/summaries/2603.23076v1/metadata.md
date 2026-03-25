@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: MsFormer: Enabling Robust Predictive Maintenance Services for Industrial Devices
+- **作者**: Jiahui Zhou, Dan Li, Ruibing Jin, Jian Lou, Yanran Zhao et al.
+- **ArXiv ID**: 2603.23076v1
+- **发布日期**: 2026-03-24
+- **主分类**: cs.LG
+- **分类**: cs.LG
+- **摘要**: Providing reliable predictive maintenance is a critical industrial AI service essential for ensuring the high availability of manufacturing devices. Existing deep-learning methods present competitive results on such tasks but lack a general service-oriented framework to capture complex dependencies in industrial IoT sensor data. While Transformer-based models show strong sequence modeling capabilities, their direct deployment as robust AI services faces significant bottlenecks. Specifically, streaming sensor data collected in real-world service environments often exhibits multi-scale temporal correlations driven by machine working principles. Besides, the datasets available for training time-to-failure predictive services are typically limited in size. These issues pose significant challenges for directly applying existing models as robust predictive services. To address these challenges, we propose MsFormer, a lightweight Multi-scale Transformer designed as a unified AI service model for reliable industrial predictive maintenance. MsFormer incorporates a Multi-scale Sampling (MS) module and a tailored position encoding mechanism to capture sequential correlations across multi-streaming service data. Additionally, to accommodate data-scarce service environments, MsFormer adopts a lightweight attention mechanism with straightforward pooling operations instead of self-attention. Extensive experiments on real-world datasets demonstrate that the proposed framework achieves significant performance improvements over state-of-the-art methods. Furthermore, MsFormer outperforms across industrial devices and operating conditions, demonstrating strong generalizability while maintaining a highly reliable Quality of Service (QoS).
+- **PDF 链接**: https://arxiv.org/pdf/2603.23076v1

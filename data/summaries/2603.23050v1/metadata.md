@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: DBAutoDoc: Automated Discovery and Documentation of Undocumented Database Schemas via Statistical Analysis and Iterative LLM Refinement
+- **作者**: Amith Nagarajan, Thomas Altman
+- **ArXiv ID**: 2603.23050v1
+- **发布日期**: 2026-03-24
+- **主分类**: cs.DB
+- **分类**: cs.DB, cs.AI
+- **摘要**: A tremendous number of critical database systems lack adequate documentation. Declared primary keys are absent, foreign key constraints have been dropped for performance, column names are cryptic abbreviations, and no entity-relationship diagrams exist. We present DBAutoDoc, a system that automates the discovery and documentation of undocumented relational database schemas by combining statistical data analysis with iterative large language model (LLM) refinement.   DBAutoDoc's central insight is that schema understanding is fundamentally an iterative, graph-structured problem. Drawing structural inspiration from backpropagation in neural networks, DBAutoDoc propagates semantic corrections through schema dependency graphs across multiple refinement iterations until descriptions converge. This propagation is discrete and semantic rather than mathematical, but the structural analogy is precise: early iterations produce rough descriptions akin to random initialization, and successive passes sharpen the global picture as context flows through the graph.   The system makes four concrete contributions detailed in the paper. On a suite of benchmark databases, DBAutoDoc achieved overall weighted scores of 96.1% across two model families (Google's Gemini and Anthropic's Claude) using a composite metric. Ablation analysis demonstrates that the deterministic pipeline contributes a 23-point F1 improvement over LLM-only FK detection, confirming that the system's contribution is substantial and independent of LLM pre-training knowledge. DBAutoDoc is released as open-source software with all evaluation configurations and prompt templates included for full reproducibility.
+- **PDF 链接**: https://arxiv.org/pdf/2603.23050v1

@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: Why AI-Generated Text Detection Fails: Evidence from Explainable AI Beyond Benchmark Accuracy
+- **作者**: Shushanta Pudasaini, Luis Miralles-Pechuán, David Lillis, Marisa Llorens Salvador
+- **ArXiv ID**: 2603.23146v1
+- **发布日期**: 2026-03-24
+- **主分类**: cs.CL
+- **分类**: cs.CL, cs.AI
+- **摘要**: The widespread adoption of Large Language Models (LLMs) has made the detection of AI-Generated text a pressing and complex challenge. Although many detection systems report high benchmark accuracy, their reliability in real-world settings remains uncertain, and their interpretability is often unexplored. In this work, we investigate whether contemporary detectors genuinely identify machine authorship or merely exploit dataset-specific artefacts. We propose an interpretable detection framework that integrates linguistic feature engineering, machine learning, and explainable AI techniques. When evaluated on two prominent benchmark corpora, namely PAN CLEF 2025 and COLING 2025, our model trained on 30 linguistic features achieves leaderboard-competitive performance, attaining an F1 score of 0.9734. However, systematic cross-domain and cross-generator evaluation reveals substantial generalisation failure: classifiers that excel in-domain degrade significantly under distribution shift. Using SHAP- based explanations, we show that the most influential features differ markedly between datasets, indicating that detectors often rely on dataset-specific stylistic cues rather than stable signals of machine authorship. Further investigation with in-depth error analysis exposes a fundamental tension in linguistic-feature-based AI text detection: the features that are most discriminative on in-domain data are also the features most susceptible to domain shift, formatting variation, and text-length effects. We believe that this knowledge helps build AI detectors that are robust across different settings. To support replication and practical use, we release an open-source Python package that returns both predictions and instance-level explanations for individual texts.
+- **PDF 链接**: https://arxiv.org/pdf/2603.23146v1
