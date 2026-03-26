@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: Refining time-space traffic diagrams: A neighborhood-adaptive linear regression method
+- **作者**: Zhihong Yao, Yi Yu, Yunxia Wu, Hao Li, Yangsheng Jiang et al.
+- **ArXiv ID**: 2603.24312v1
+- **发布日期**: 2026-03-25
+- **主分类**: cs.CV
+- **分类**: cs.CV
+- **摘要**: The time-space (TS) traffic diagram serves as a crucial tool for characterizing the dynamic evolution of traffic flow, with its resolution directly influencing the effectiveness of traffic theory research and engineering applications. However, constrained by monitoring precision and sampling frequency, existing TS traffic diagrams commonly suffer from low resolution. To address this issue, this paper proposes a refinement method for TS traffic diagrams based on neighborhood-adaptive linear regression. Introducing the concept of neighborhood embedding into TS diagram refinement, the method leverages local pattern similarity in TS diagrams, adaptively identifies neighborhoods similar to target cells, and fits the low-to-high resolution mapping within these neighborhoods for refinement. It avoids the over-smoothing tendency of the traditional global linear model, allows the capture of unique traffic wave propagation and congestion evolution characteristics, and outperforms the traditional neighborhood embedding method in terms of local information utilization to achieve target cell refinement. Validation on two real datasets across multiple scales and upscaling factors shows that, compared to benchmark methods, the proposed method achieves improvements of 9.16%, 8.16%, 1.86%, 3.89%, and 5.83% in metrics including MAE, MAPE, CMJS, SSIM, and GMSD, respectively. Furthermore, the proposed method exhibits strong generalization and robustness in cross-day and cross-scenario validations. In summary, requiring only a minimal amount of paired high- and low-resolution training data, the proposed method features a concise formulation, providing a foundation for the low-cost, fine-grained refinement of low-sampling-rate traffic data.
+- **PDF 链接**: https://arxiv.org/pdf/2603.24312v1
