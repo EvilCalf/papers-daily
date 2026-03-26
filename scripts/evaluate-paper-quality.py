@@ -224,7 +224,7 @@ Please evaluate:"""
             "max_tokens": 200
         }
         
-        response = requests.post(url, headers=headers, json=payload, timeout=120)
+        response = requests.post(url, headers=headers, json=payload, timeout=180)
         
         if response.status_code != 200:
             print(f"  ⚠️  API 错误：{response.status_code}", file=sys.stderr)
@@ -321,7 +321,7 @@ def save_papers_index(papers, run_dir):
     print(f"✅ 已保存索引：{index_path}")
 
 
-def evaluate_all_papers_parallel(run_dir, min_score=7, language="Chinese", max_workers=10):
+def evaluate_all_papers_parallel(run_dir, min_score=7, language="Chinese", max_workers=5):
     """
     并行评估所有论文质量并过滤
     
