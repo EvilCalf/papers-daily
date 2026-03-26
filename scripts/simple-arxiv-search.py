@@ -260,8 +260,9 @@ def main():
         print()
     
     # 保存 papers_index.json
+    # 不限制数量，让 Stage A.2 质量评分过滤（≥8 分保留）
     papers_index = []
-    for paper in unique_papers[:40]:  # 最多 40 篇
+    for paper in unique_papers:  # 全部保留（通常 100-200 篇）
         paper_dir = output_path / paper['arxiv_id']
         paper_dir.mkdir(parents=True, exist_ok=True)
         

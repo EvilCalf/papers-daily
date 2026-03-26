@@ -402,6 +402,12 @@ def evaluate_all_papers_parallel(run_dir, min_score=7, language="Chinese", max_w
     # 按分数排序
     filtered.sort(key=lambda x: x['quality_score'], reverse=True)
     
+    # 限制最多 40 篇（防止解读时间过长）
+    MAX_PAPERS = 40
+    if len(filtered) > MAX_PAPERS:
+        print(f"✂️  限制最多 {MAX_PAPERS} 篇（当前 {len(filtered)} 篇，取前 {MAX_PAPERS} 篇高分）")
+        filtered = filtered[:MAX_PAPERS]
+    
     print(f"\n📈 过滤结果:")
     print(f"  原始：{len(papers)} 篇")
     print(f"  ≥{min_score}分：{len(filtered)} 篇")
