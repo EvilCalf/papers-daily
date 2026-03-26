@@ -321,7 +321,7 @@ def save_papers_index(papers, run_dir):
     print(f"✅ 已保存索引：{index_path}")
 
 
-def evaluate_all_papers_parallel(run_dir, min_score=7, language="Chinese", max_workers=5):
+def evaluate_all_papers_parallel(run_dir, min_score=7, language="Chinese", max_workers=10):
     """
     并行评估所有论文质量并过滤
     
@@ -357,14 +357,21 @@ def evaluate_all_papers_parallel(run_dir, min_score=7, language="Chinese", max_w
     scored_papers = []
     score_distribution = {i: 0 for i in range(1, 11)}
     
+    # 进度计数器（使用列表以便在嵌套函数中修改）
+    progress_counter = [0]
+    import threading
+    progress_lock = threading.Lock()
+    
     def evaluate_with_progress(paper):
-        arxiv_id = paper.get('arxiv_id', 'unknown')
-        title = paper.get('title', '')[:50]
         score, reason = evaluate_single_paper(paper, language)
         paper['quality_score'] = score
         paper['quality_reason'] = reason
-        status = "✅" if score >= min_score else "⚠️"
-        print(f"  [{arxiv_id}] {status} {score}分 ({reason[:40]}...)")
+        with progress_lock:
+            progress_counter[0] += 1
+            current = progress_counter[0]
+            # 每 10 篇打印一次进度，避免输出缓冲导致看起来卡住
+            if current % 10 == 0 or current == len(papers):
+                print(f"  进度：{current}/{len(papers)} 篇...")
         return paper
     
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:

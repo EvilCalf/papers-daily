@@ -250,6 +250,7 @@ def main():
     if EXCLUDE_CATEGORIES:
         print(f"🚫 排除领域：{', '.join(EXCLUDE_CATEGORIES)}")
         filtered_papers = []
+        excluded_count = 0
         for paper in unique_papers:
             # 检查论文的所有分类
             all_cats = paper.get('categories', [])
@@ -258,11 +259,10 @@ def main():
             if not has_excluded_cat:
                 filtered_papers.append(paper)
             else:
-                primary_cat = paper.get('primary_category', '')
-                print(f"   ⚠️  排除：{paper['arxiv_id']} ({primary_cat}, 包含{[c for c in all_cats if c in EXCLUDE_CATEGORIES]}) - {paper['title'][:50]}")
+                excluded_count += 1
         print(f"   过滤前：{len(unique_papers)} 篇")
         print(f"   过滤后：{len(filtered_papers)} 篇")
-        print(f"   排除：{len(unique_papers) - len(filtered_papers)} 篇")
+        print(f"   排除：{excluded_count} 篇（包含 CV/LG/NE 分类）")
         unique_papers = filtered_papers
         print()
     
@@ -270,14 +270,16 @@ def main():
     if args.from_date and args.to_date:
         print(f"📅 按发布日期过滤：{args.from_date} 到 {args.to_date}")
         filtered_papers = []
+        excluded_by_date = 0
         for paper in unique_papers:
             paper_date = paper['published']
             if args.from_date <= paper_date <= args.to_date:
                 filtered_papers.append(paper)
             else:
-                print(f"   ⚠️  排除：{paper['arxiv_id']} ({paper_date}) - 不在目标日期范围内")
+                excluded_by_date += 1
         print(f"   过滤前：{len(unique_papers)} 篇")
         print(f"   过滤后：{len(filtered_papers)} 篇")
+        print(f"   排除：{excluded_by_date} 篇（不在目标日期范围）")
         unique_papers = filtered_papers
         print()
     
