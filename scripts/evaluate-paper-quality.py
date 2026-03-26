@@ -98,45 +98,59 @@ def evaluate_single_paper_rule_based(paper_info):
     summary = paper.get('summary', '')
     authors = paper.get('authors', [])
     
-    score = 5  # 基础分
+    score = 4  # 基础分降低（更严格）
     reasons = []
     
     # 1. 摘要长度（太短可能不完整）
-    if len(summary) < 150:
+    if len(summary) < 200:
         score -= 2
         reasons.append("摘要过短")
-    elif len(summary) > 400:
+    elif len(summary) > 500:
         score += 1
         reasons.append("摘要详细")
     
-    # 2. 实验相关词汇
+    # 2. 实验相关词汇（提高门槛）
     quality_keywords = ['experiment', 'evaluation', 'result', 'benchmark', 
                         'performance', 'compare', 'outperform', 'state-of-the-art',
-                        'empirical', 'quantitative', 'ablation']
+                        'empirical', 'quantitative', 'ablation', 'dataset']
     summary_lower = summary.lower()
     kw_count = sum(1 for kw in quality_keywords if kw in summary_lower)
     
-    if kw_count >= 5:
-        score += 2
+    if kw_count >= 8:
+        score += 3
         reasons.append(f"实验充分 ({kw_count}个关键词)")
-    elif kw_count >= 2:
+    elif kw_count >= 5:
+        score += 2
+        reasons.append(f"实验合理 ({kw_count}个关键词)")
+    elif kw_count >= 3:
         score += 1
-        reasons.append(f"有实验验证 ({kw_count}个关键词)")
+        reasons.append(f"有实验 ({kw_count}个关键词)")
     else:
-        score -= 1
+        score -= 2
         reasons.append("实验描述不足")
     
-    # 3. 作者数量（多人合作可能更严谨）
-    if len(authors) >= 5:
+    # 3. 是否有量化指标（关键！）
+    quant_keywords = ['%', 'percent', 'improve', 'increase', 'reduce', 'decrease',
+                      'accuracy', 'precision', 'recall', 'F1', 'score', '±']
+    has_quant = any(kw in summary_lower for kw in quant_keywords)
+    if has_quant:
+        score += 2
+        reasons.append("有量化指标")
+    else:
+        score -= 2
+        reasons.append("无量化指标")
+    
+    # 4. 作者数量（多人合作可能更严谨）
+    if len(authors) >= 6:
         score += 1
         reasons.append("多人合作")
-    elif len(authors) >= 2:
+    elif len(authors) >= 3:
         score += 0
     else:
         score -= 1
-        reasons.append("单人工作")
+        reasons.append("作者较少")
     
-    # 4. 标题质量
+    # 5. 标题质量
     if '?' in title and title.count('?') > 1:
         score -= 1
         reasons.append("标题疑问过多")
@@ -144,13 +158,22 @@ def evaluate_single_paper_rule_based(paper_info):
         score -= 1
         reasons.append("标题有感叹号")
     
-    # 5. 是否有明确贡献表述
+    # 6. 是否有明确贡献表述（提高要求）
     contribution_keywords = ['propose', 'introduce', 'present', 'novel', 'new',
-                            'first', 'contribution', 'improve', 'enhance']
+                            'first', 'contribution', 'improve', 'enhance', 'framework',
+                            'method', 'approach', 'algorithm']
     has_contribution = any(kw in summary_lower for kw in contribution_keywords)
     if has_contribution:
         score += 1
-        reasons.append("有明确贡献表述")
+        reasons.append("有方法创新")
+    
+    # 7. 检查是否纯应用/综述（扣分）
+    application_keywords = ['application', 'apply', 'case study', 'survey', 'review',
+                           'benchmark only', 'empirical study']
+    is_application = any(kw in summary_lower for kw in application_keywords)
+    if is_application:
+        score = min(score, 6)  # 纯应用最高 6 分
+        reasons.append("应用/综述")
     
     # 限制在 1-10 范围内
     score = max(1, min(10, score))
@@ -184,16 +207,22 @@ def evaluate_single_paper_llm(paper_info, language="Chinese"):
 **摘要**：
 {summary}
 
-**评分标准**（1-10 分）：
-- 9-10 分：突破性工作，实验非常充分，明确超越 SOTA，有理论贡献
-- 7-8 分：扎实工作，有明确贡献，实验设计合理
-- 5-6 分：一般工作，贡献有限，或实验不够充分
-- 1-4 分：低质量工作，明显重复已有研究，或纯观点无实验
+**评分标准**（1-10 分，严格评分）：
+- 9-10 分：突破性工作，有理论证明 + 充分实验（≥3 个数据集/任务），明确超越 SOTA
+- 7-8 分：扎实工作，有清晰方法创新，实验设计合理（≥2 个对比基线），性能提升明确
+- 5-6 分：增量改进，方法创新有限，或实验不够充分（<2 个基线/数据集）
+- 1-4 分：低质量，纯应用无创新，或重复已有研究，或缺少实验验证
 
-**请只基于摘要内容评估以下维度**：
-1. 创新性：是否提出新方法/新视角？
-2. 实验充分性：摘要中是否提到实验验证？
-3. 写作质量：摘要是否清晰表达核心贡献？
+**关键评分维度**（必须同时满足才能得高分）：
+1. 创新性（40%）：是否提出新方法/新框架/新理论？纯应用/综述最高 6 分
+2. 实验充分性（40%）：是否有对比实验？基线数量？数据集数量？无实验最高 4 分
+3. 性能提升（20%）：是否明确超越 SOTA？无量化指标最高 5 分
+
+**扣分项**：
+- 摘要模糊，无法识别核心贡献：-2 分
+- 自称"SOTA"但无具体数据支持：-2 分
+- 纯工程应用，无方法创新：最高 6 分
+- 缺少量化指标（只有"显著提升"等模糊描述）：-2 分
 
 **输出格式**（严格遵守，只返回一行）：
 分数：[1-10 的数字] 理由：[1 句话说明评分理由]
@@ -207,14 +236,22 @@ def evaluate_single_paper_llm(paper_info, language="Chinese"):
 **Abstract**:
 {summary}
 
-**Scoring Criteria** (1-10):
-- 9-10: Breakthrough work, extensive experiments, clear SOTA improvement
-- 7-8: Solid work, clear contributions, reasonable experiments
-- 5-6: Average work, limited contributions, or insufficient experiments
-- 1-4: Low quality, obvious repetition, or pure opinion without experiments
+**Scoring Criteria** (1-10, strict evaluation):
+- 9-10: Breakthrough work, theoretical proof + extensive experiments (≥3 datasets/tasks), clear SOTA improvement
+- 7-8: Solid work, clear method innovation, reasonable experiments (≥2 baselines), explicit performance gain
+- 5-6: Incremental improvement, limited innovation, or insufficient experiments (<2 baselines/datasets)
+- 1-4: Low quality, pure application without innovation, or repetition, or no experimental validation
 
-**Output Format** (strictly, one line only):
-Score: [1-10] Reason: [one sentence]
+**Key Dimensions** (all required for high score):
+1. Novelty (40%): New method/framework/theory? Pure application/survey max 6
+2. Experiments (40%): Comparative experiments? Number of baselines? datasets? No experiments max 4
+3. Performance (20%): Clear SOTA improvement? No quantitative metrics max 5
+
+**Penalties**:
+- Vague abstract, unclear contribution: -2
+- Claims "SOTA" without concrete data: -2
+- Pure engineering, no method innovation: max 6
+- No quantitative metrics (only "significant improvement"): -2
 
 Please evaluate:"""
     
