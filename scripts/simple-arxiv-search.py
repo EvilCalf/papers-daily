@@ -37,9 +37,9 @@ KEYWORDS = {
 }
 
 # arXiv 分类
-# 过滤掉 cs.CV（计算机视觉），只保留 AI/ML/NLP 相关领域
-CATEGORIES = ["cs.AI", "cs.CL", "cs.LG", "cs.NE"]
-EXCLUDE_CATEGORIES = ["cs.CV"]  # 排除计算机视觉领域
+# 只保留 cs.AI（人工智能）和 cs.CL（计算与语言/NLP）
+CATEGORIES = ["cs.AI", "cs.CL"]
+EXCLUDE_CATEGORIES = ["cs.CV", "cs.LG", "cs.NE"]  # 排除 CV、机器学习系统、神经进化计算
 
 def search_arxiv(query, max_results=50, date_from=None, date_to=None):
     """搜索 arXiv（单个关键词）"""
