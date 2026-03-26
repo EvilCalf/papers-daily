@@ -37,7 +37,9 @@ KEYWORDS = {
 }
 
 # arXiv 分类
-CATEGORIES = ["cs.AI", "cs.CL", "cs.LG", "cs.CV", "cs.NE"]
+# 过滤掉 cs.CV（计算机视觉），只保留 AI/ML/NLP 相关领域
+CATEGORIES = ["cs.AI", "cs.CL", "cs.LG", "cs.NE"]
+EXCLUDE_CATEGORIES = ["cs.CV"]  # 排除计算机视觉领域
 
 def search_arxiv(query, max_results=50, date_from=None, date_to=None):
     """搜索 arXiv（单个关键词）"""
@@ -243,6 +245,22 @@ def main():
     print(f"   检索总数：{len(all_papers)}")
     print(f"   去重后：{len(unique_papers)}")
     print()
+    
+    # 过滤掉 CV 领域的论文
+    if EXCLUDE_CATEGORIES:
+        print(f"🚫 排除领域：{', '.join(EXCLUDE_CATEGORIES)}")
+        filtered_papers = []
+        for paper in unique_papers:
+            primary_cat = paper.get('primary_category', '')
+            if primary_cat not in EXCLUDE_CATEGORIES:
+                filtered_papers.append(paper)
+            else:
+                print(f"   ⚠️  排除 CV：{paper['arxiv_id']} ({primary_cat}) - {paper['title'][:50]}")
+        print(f"   过滤前：{len(unique_papers)} 篇")
+        print(f"   过滤后：{len(filtered_papers)} 篇")
+        print(f"   排除：{len(unique_papers) - len(filtered_papers)} 篇 CV 论文")
+        unique_papers = filtered_papers
+        print()
     
     # 按发布日期过滤（arXiv API 的 submittedDate 不可靠，需要后过滤）
     if args.from_date and args.to_date:
