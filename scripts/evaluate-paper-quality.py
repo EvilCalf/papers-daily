@@ -83,7 +83,7 @@ def load_paper_metadata(paper_info):
 
 def evaluate_single_paper_rule_based(paper_info):
     """
-    基于规则快速评估论文质量（无需 LLM）
+    基于规则快速评估论文质量（仅用于 LLM 评分失败时的回退）
     
     Args:
         paper_info: dict with 'title', 'summary', 'authors', 'arxiv_id'
@@ -96,89 +96,37 @@ def evaluate_single_paper_rule_based(paper_info):
     
     title = paper.get('title', '')
     summary = paper.get('summary', '')
-    authors = paper.get('authors', [])
     
-    score = 4  # 基础分降低（更严格）
+    # 简单规则：只检查明显低质量情况
+    score = 5  # 默认中等分数
     reasons = []
     
-    # 1. 摘要长度（太短可能不完整）
-    if len(summary) < 200:
-        score -= 2
+    # 1. 摘要过短（可能不完整）
+    if len(summary) < 100:
+        score = 3
         reasons.append("摘要过短")
-    elif len(summary) > 500:
-        score += 1
-        reasons.append("摘要详细")
     
-    # 2. 实验相关词汇（提高门槛）
-    quality_keywords = ['experiment', 'evaluation', 'result', 'benchmark', 
-                        'performance', 'compare', 'outperform', 'state-of-the-art',
-                        'empirical', 'quantitative', 'ablation', 'dataset']
+    # 2. 摘要包含明显低质量信号
     summary_lower = summary.lower()
-    kw_count = sum(1 for kw in quality_keywords if kw in summary_lower)
+    if 'preliminary' in summary_lower or 'work in progress' in summary_lower:
+        score = min(score, 4)
+        reasons.append("初步工作")
     
-    if kw_count >= 8:
-        score += 3
-        reasons.append(f"实验充分 ({kw_count}个关键词)")
-    elif kw_count >= 5:
-        score += 2
-        reasons.append(f"实验合理 ({kw_count}个关键词)")
-    elif kw_count >= 3:
-        score += 1
-        reasons.append(f"有实验 ({kw_count}个关键词)")
-    else:
-        score -= 2
-        reasons.append("实验描述不足")
+    if 'position paper' in summary_lower or 'opinion' in summary_lower:
+        score = min(score, 5)
+        reasons.append("观点论文")
     
-    # 3. 是否有量化指标（关键！）
-    quant_keywords = ['%', 'percent', 'improve', 'increase', 'reduce', 'decrease',
-                      'accuracy', 'precision', 'recall', 'F1', 'score', '±']
-    has_quant = any(kw in summary_lower for kw in quant_keywords)
-    if has_quant:
-        score += 2
-        reasons.append("有量化指标")
-    else:
-        score -= 2
-        reasons.append("无量化指标")
-    
-    # 4. 作者数量（多人合作可能更严谨）
-    if len(authors) >= 6:
-        score += 1
-        reasons.append("多人合作")
-    elif len(authors) >= 3:
-        score += 0
-    else:
-        score -= 1
-        reasons.append("作者较少")
-    
-    # 5. 标题质量
-    if '?' in title and title.count('?') > 1:
-        score -= 1
-        reasons.append("标题疑问过多")
-    if '!' in title:
-        score -= 1
-        reasons.append("标题有感叹号")
-    
-    # 6. 是否有明确贡献表述（提高要求）
-    contribution_keywords = ['propose', 'introduce', 'present', 'novel', 'new',
-                            'first', 'contribution', 'improve', 'enhance', 'framework',
-                            'method', 'approach', 'algorithm']
-    has_contribution = any(kw in summary_lower for kw in contribution_keywords)
-    if has_contribution:
-        score += 1
-        reasons.append("有方法创新")
-    
-    # 7. 检查是否纯应用/综述（扣分）
-    application_keywords = ['application', 'apply', 'case study', 'survey', 'review',
-                           'benchmark only', 'empirical study']
-    is_application = any(kw in summary_lower for kw in application_keywords)
-    if is_application:
-        score = min(score, 6)  # 纯应用最高 6 分
-        reasons.append("应用/综述")
+    # 3. 无实验信号
+    experiment_keywords = ['experiment', 'evaluation', 'result', 'benchmark', 'performance']
+    has_experiment = any(kw in summary_lower for kw in experiment_keywords)
+    if not has_experiment:
+        score = min(score, 5)
+        reasons.append("无实验")
     
     # 限制在 1-10 范围内
     score = max(1, min(10, score))
     
-    reason = "; ".join(reasons) if reasons else "一般论文"
+    reason = "; ".join(reasons) if reasons else "规则评分（回退）"
     
     return score, reason
 
