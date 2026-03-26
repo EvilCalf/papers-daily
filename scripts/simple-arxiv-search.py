@@ -40,7 +40,7 @@ KEYWORDS = {
 CATEGORIES = ["cs.AI", "cs.CL", "cs.LG", "cs.CV", "cs.NE"]
 
 def search_arxiv(query, max_results=50, date_from=None, date_to=None):
-    """搜索 arXiv"""
+    """搜索 arXiv（单个关键词）"""
     base_url = "http://export.arxiv.org/api/query"
     
     # 构建查询
@@ -66,6 +66,38 @@ def search_arxiv(query, max_results=50, date_from=None, date_to=None):
     
     try:
         with urllib.request.urlopen(url, timeout=30) as response:
+            return response.read().decode('utf-8')
+    except Exception as e:
+        print(f"❌ 搜索失败：{e}")
+        return None
+
+def search_arxiv_combined(combined_query, max_results=250, date_from=None, date_to=None):
+    """搜索 arXiv（组合查询，多个关键词用 OR 连接）"""
+    base_url = "http://export.arxiv.org/api/query"
+    
+    # combined_query 已经是 all:keyword1 OR all:keyword2 格式
+    search_query = combined_query
+    
+    # 添加日期过滤
+    if date_from and date_to:
+        search_query += f" AND submittedDate:[{date_from} TO {date_to}]"
+    
+    # 添加分类过滤
+    category_query = " OR ".join([f"cat:{cat}" for cat in CATEGORIES])
+    search_query = f"({search_query}) AND ({category_query})"
+    
+    params = {
+        "search_query": search_query,
+        "start": 0,
+        "max_results": max_results,
+        "sortBy": "submittedDate",
+        "sortOrder": "descending"
+    }
+    
+    url = f"{base_url}?{urllib.parse.urlencode(params)}"
+    
+    try:
+        with urllib.request.urlopen(url, timeout=60) as response:
             return response.read().decode('utf-8')
     except Exception as e:
         print(f"❌ 搜索失败：{e}")
@@ -180,29 +212,29 @@ def main():
     
     all_papers = []
     
-    # 检索每个关键词
+    # 检索每个类别（每个类别的关键词用 OR 连接，一次请求）
     for category, keywords in KEYWORDS.items():
         print(f"📌 类别：{category}")
         
-        for keyword in keywords[:3]:  # 每个类别只取前 3 个关键词，避免太多
-            print(f"   🔎 关键词：{keyword}", end=' ... ', flush=True)
-            
-            xml_result = search_arxiv(
-                keyword,
-                max_results=args.max_results,
-                date_from=date_from,
-                date_to=date_to
-            )
-            
-            if xml_result:
-                papers = parse_arxiv_response(xml_result)
-                print(f"找到 {len(papers)} 篇")
-                all_papers.extend(papers)
-            else:
-                print("❌ 失败")
-            
-            time.sleep(0.5)  # 避免请求太快
+        # 将关键词用 OR 连接，一次请求多个关键词
+        combined_query = " OR ".join([f"all:{kw}" for kw in keywords[:5]])  # 每个类别前 5 个关键词
+        print(f"   🔎 组合查询：{combined_query[:60]}...", end=' ... ', flush=True)
         
+        xml_result = search_arxiv_combined(
+            combined_query,
+            max_results=args.max_results * 5,  # 每个类别最多 250 篇
+            date_from=date_from,
+            date_to=date_to
+        )
+        
+        if xml_result:
+            papers = parse_arxiv_response(xml_result)
+            print(f"找到 {len(papers)} 篇")
+            all_papers.extend(papers)
+        else:
+            print("❌ 失败")
+        
+        time.sleep(0.5)  # 避免请求太快
         print()
     
     # 去重

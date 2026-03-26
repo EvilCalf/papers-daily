@@ -29,33 +29,41 @@ log "=== 每日论文推送任务开始 ==="
 
 # 计算日期
 PUSH_DATE=$(date +%Y-%m-%d)          # 推送日期（今天）
-FROM_DATE=$(date -d "3 days ago" +%Y-%m-%d)  # 检索起始日期（3 天前）
 TO_DATE=$(date -d "yesterday" +%Y-%m-%d)     # 检索结束日期（昨天）
 DAY_OF_WEEK=$(date +%u)              # 星期几（1=周一，7=周日）
+
+# 周一检索 3 天（周五到周日），周二到周五检索 1 天（昨天）
+if [ "$DAY_OF_WEEK" -eq 1 ]; then
+    # 周一：检索 3 天（周五、周六、周日）
+    FROM_DATE=$(date -d "3 days ago" +%Y-%m-%d)
+    LOOKBACK="3d"
+    log "📅 周一：检索 3 天范围（$FROM_DATE 到 $TO_DATE）"
+elif [ "$DAY_OF_WEEK" -eq 6 ] || [ "$DAY_OF_WEEK" -eq 7 ]; then
+    # 周末：跳过
+    log "🎉 周末时间，跳过推送（arXiv 周末不更新论文）"
+    log "💤 下周一再见～"
+    exit 0
+else
+    # 周二到周五：检索 1 天（昨天）
+    FROM_DATE="$TO_DATE"
+    LOOKBACK="1d"
+    log "📅 工作日：检索 1 天（$FROM_DATE）"
+fi
 
 log "推送日期：$PUSH_DATE"
 log "检索范围：$FROM_DATE 到 $TO_DATE"
 log "星期：$DAY_OF_WEEK"
 
-# 周末跳过（周六=6，周日=7）
-if [ "$DAY_OF_WEEK" -eq 6 ] || [ "$DAY_OF_WEEK" -eq 7 ]; then
-    log "🎉 周末时间，跳过推送（arXiv 周末不更新论文）"
-    log "💤 下周一再见～"
-    exit 0
-fi
-
 # 步骤 1: 运行编排器（检索 + AI 解读）
 log "📥 步骤 1: 运行编排器（检索 + AI 解读）..."
 log "⏱️ 预计耗时：10-20 分钟（取决于论文数量）"
 
-# 修复：传递 --from-date 和 --to-date 参数，检索最近 3 天的论文
-# 这样周一会检索周五到周日的论文（自动处理周末无论文的情况）
-# 注意：编排器内部已处理部分失败（下载成功率≥80% 即继续）
+# 根据星期几动态设置检索范围
 if python3 "$SCRIPTS_DIR/papers-orchestrator.py" \
     --date "$PUSH_DATE" \
     --from-date "$FROM_DATE" \
     --to-date "$TO_DATE" \
-    --lookback 3d \
+    --lookback "$LOOKBACK" \
     --language Chinese; then
     log "✅ 编排器成功完成"
 else

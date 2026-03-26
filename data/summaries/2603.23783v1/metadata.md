@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: Probabilistic Geometric Alignment via Bayesian Latent Transport for Domain-Adaptive Foundation Models
+- **作者**: Kuepon Aueawatthanaphisut, Kuepon Aueawatthanaphisut
+- **ArXiv ID**: 2603.23783v1
+- **发布日期**: 2026-03-24
+- **主分类**: cs.LG
+- **分类**: cs.LG, cs.AI, math.OC, math.PR, stat.ML
+- **摘要**: Adapting large-scale foundation models to new domains with limited supervision remains a fundamental challenge due to latent distribution mismatch, unstable optimization dynamics, and miscalibrated uncertainty propagation. This paper introduces an uncertainty-aware probabilistic latent transport framework that formulates domain adaptation as a stochastic geometric alignment problem in representation space. A Bayesian transport operator is proposed to redistribute latent probability mass along Wasserstein-type geodesic trajectories, while a PAC-Bayesian regularization mechanism constrains posterior model complexity to mitigate catastrophic overfitting. The proposed formulation yields theoretical guarantees on convergence stability, loss landscape smoothness, and sample efficiency under distributional shift. Empirical analyses demonstrate substantial reduction in latent manifold discrepancy, accelerated transport energy decay, and improved covariance calibration compared with deterministic fine-tuning and adversarial domain adaptation baselines. Furthermore, bounded posterior uncertainty evolution indicates enhanced probabilistic reliability during cross-domain transfer. By establishing a principled connection between stochastic optimal transport geometry and statistical generalization theory, the proposed framework provides new insights into robust adaptation of modern foundation architectures operating in heterogeneous environments. These findings suggest that uncertainty-aware probabilistic alignment constitutes a promising paradigm for reliable transfer learning in next-generation deep representation systems.
+- **PDF 链接**: https://arxiv.org/pdf/2603.23783v1
