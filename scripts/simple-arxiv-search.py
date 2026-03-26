@@ -280,7 +280,7 @@ def main():
             "--min-interval-sec", "5"
         ]
         
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=2400)  # 40 分钟，足够下载 40 篇论文
         print(result.stdout)
         if result.stderr:
             print(result.stderr)

@@ -172,7 +172,7 @@ def stage_a_search(date, from_date, to_date, run_dir, lookback="1d", language="C
             "--max-results", "50"  # 每关键词 50 篇
         ]
         
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=2400)  # 40 分钟
         
         if result.returncode != 0:
             raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
