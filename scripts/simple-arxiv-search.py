@@ -246,19 +246,23 @@ def main():
     print(f"   去重后：{len(unique_papers)}")
     print()
     
-    # 过滤掉 CV 领域的论文
+    # 过滤掉 CV/LG/NE 领域的论文（检查所有分类，不只是 primary_category）
     if EXCLUDE_CATEGORIES:
         print(f"🚫 排除领域：{', '.join(EXCLUDE_CATEGORIES)}")
         filtered_papers = []
         for paper in unique_papers:
-            primary_cat = paper.get('primary_category', '')
-            if primary_cat not in EXCLUDE_CATEGORIES:
+            # 检查论文的所有分类
+            all_cats = paper.get('categories', [])
+            # 如果任何分类在排除列表中，就排除这篇论文
+            has_excluded_cat = any(cat in EXCLUDE_CATEGORIES for cat in all_cats)
+            if not has_excluded_cat:
                 filtered_papers.append(paper)
             else:
-                print(f"   ⚠️  排除 CV：{paper['arxiv_id']} ({primary_cat}) - {paper['title'][:50]}")
+                primary_cat = paper.get('primary_category', '')
+                print(f"   ⚠️  排除：{paper['arxiv_id']} ({primary_cat}, 包含{[c for c in all_cats if c in EXCLUDE_CATEGORIES]}) - {paper['title'][:50]}")
         print(f"   过滤前：{len(unique_papers)} 篇")
         print(f"   过滤后：{len(filtered_papers)} 篇")
-        print(f"   排除：{len(unique_papers) - len(filtered_papers)} 篇 CV 论文")
+        print(f"   排除：{len(unique_papers) - len(filtered_papers)} 篇")
         unique_papers = filtered_papers
         print()
     
