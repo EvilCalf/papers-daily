@@ -372,10 +372,23 @@ def update_reports_json(papers_data, push_date, date_range, data_dir):
     # 移除同日期记录（如果有）
     reports = [r for r in reports if r['date'] != push_date]
     
+    # 计算 paper_date（论文日期 = 推送日期 - 1 天，周一的话减 3 天）
+    from datetime import datetime, timedelta
+    push_date_obj = datetime.strptime(push_date, "%Y-%m-%d")
+    day_of_week = push_date_obj.weekday()  # 0=周一，4=周五，5=周六，6=周日
+    
+    if day_of_week == 0:  # 周一，论文日期是周五
+        paper_date = (push_date_obj - timedelta(days=3)).strftime("%Y-%m-%d")
+        date_range_str = f"{paper_date}~{push_date}"
+    else:  # 其他工作日，论文日期是前一天
+        paper_date = (push_date_obj - timedelta(days=1)).strftime("%Y-%m-%d")
+        date_range_str = paper_date
+    
     # 添加新记录（指向 JSON 数据文件）
     entry = {
         'date': push_date,
-        'paper_date': date_range.split('~')[0] if '~' in date_range else date_range,
+        'paper_date': paper_date,
+        'date_range': date_range_str,
         'count': len(papers_data),
         'llm_count': llm_count,
         'agent_count': agent_count,
@@ -822,6 +835,9 @@ def generate_static_html(papers_data, push_date, date_range, output_html, run_di
         f.write(html)
 
 def main():
+    import sys
+    from datetime import datetime, timedelta
+    
     parser = argparse.ArgumentParser()
     parser.add_argument('--run-dir', required=True, help='编排器运行目录')
     parser.add_argument('--push-date', help='推送日期（默认今天）')

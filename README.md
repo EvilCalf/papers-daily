@@ -1,8 +1,8 @@
-# 📚 每日论文推送系统 v2.0（修正版）
+# 📚 每日论文推送系统 v2.1（数据/展示分离版）
 
-**自动检索 arXiv 论文 + AI 深度解读 + 网页生成 + 动态主页**
+**自动检索 arXiv 论文 + AI 深度解读 + JSON 数据生成 + 动态网页展示**
 
-_最后更新：2026-03-18 | 系统状态：✅ 生产环境_
+_最后更新：2026-03-27 | 系统状态：✅ 生产环境_
 
 ---
 
@@ -20,7 +20,8 @@ _最后更新：2026-03-18 | 系统状态：✅ 生产环境_
 ## 🌐 访问地址
 
 - **主页（动态数据）**: http://evilcalf.online/papers/
-- **今日论文**: http://evilcalf.online/papers/detail.html?date=2026-03-18
+- **今日论文**: http://evilcalf.online/papers/detail.html?date=2026-03-27
+- **历史论文**: http://evilcalf.online/papers/detail.html?date=YYYY-MM-DD
 
 ---
 
@@ -41,16 +42,13 @@ Cron 触发 (10:00) → 检索 arXiv → AI 解读 (10 节) → 生成网页 →
 ```bash
 # 步骤 1: 检索 + AI 解读（编排器）
 python3 /root/.openclaw/workspace/projects/papers-daily/scripts/papers-orchestrator.py \
-  --date 2026-03-18 \
-  --from-date "2026-03-18" \
-  --to-date "2026-03-18" \
+  --date 2026-03-27 \
+  --from-date "2026-03-26" \
+  --to-date "2026-03-26" \
   --language Chinese
 
-# 步骤 2: 生成网页 + 同步数据
-python3 /root/.openclaw/workspace/projects/papers-daily/scripts/orchestrator-to-web.py \
-  --run-dir /root/.openclaw/workspace/tmp/papers-orchestrator/llm-and-ai-agent-20260318-xxx \
-  --push-date 2026-03-18 \
-  --output-html /root/.openclaw/workspace/tmp/papers-daily-2026-03-18.html
+# 步骤 2: 生成 JSON 数据 + 同步索引
+bash /root/.openclaw/workspace/projects/papers-daily/scripts/generate-daily.sh 2026-03-27
 ```
 
 ### 自动触发（生产环境）
@@ -117,19 +115,21 @@ papers-daily/
 ├── papers-orchestrator/             # 编排器输出
 │   └── llm-and-ai-agent-{date}/
 │       ├── papers_index.json        # 论文索引
-│       └── papers/<arxiv_id>/
+│       └── <arxiv_id>/              # 论文目录（直接在 RUN_DIR 下）
 │           ├── metadata.md          # 元数据
 │           └── summary.md           # AI 解读 ⭐
-├── papers-daily-{date}.html         # 生成的网页
-└── reports.json                     # 推送索引 ⭐
+└── papers-done/
+    └── {date}.json                 # 完成标记
 ```
 
-**网页部署**:
+**网页部署**（v2.1 数据/展示分离）:
 ```
 /etc/nginx/html/papers/
-├── index.html                       # 主页（动态读取 reports.json）
+├── index.html                       # 主页（静态，JS 动态读取数据）
+├── detail.html                      # 详情页模板（静态，通用所有日期）
 ├── reports.json                     # 推送索引（自动同步）⭐
-└── {date}.html                      # 每日详情页
+└── data/
+    └── {date}.json                  # 每日论文数据（JSON 格式）
 ```
 
 ---
@@ -264,14 +264,22 @@ python3 /root/.openclaw/workspace/projects/papers-daily/scripts/papers-heartbeat
 
 ## 📋 配置说明
 
-### 时间范围
+### 时间范围规则
+
+| 星期 | 检索范围 | 说明 |
+|------|----------|------|
+| 周一 | 3天（周五、周六、周日） | 周末不推送，三天论文合并到周一 |
+| 周二-周五 | 1天（前一天） | 工作日每天检索前一天的论文 |
+| 周六-周日 | 跳过 | arXiv 周末不更新论文 |
+
+### 手动指定时间范围
 
 ```bash
 # 检索 1 天
---from-date "2026-03-18" --to-date "2026-03-18"
+--from-date "2026-03-26" --to-date "2026-03-26"
 
 # 检索 3 天
---lookback "3d"
+--from-date "2026-03-24" --to-date "2026-03-26" --lookback "3d"
 
 # 检索 1 周
 --lookback "7d"
@@ -280,7 +288,7 @@ python3 /root/.openclaw/workspace/projects/papers-daily/scripts/papers-heartbeat
 ### 语言
 
 ```bash
---language Chinese  # 中文解读
+--language Chinese  # 中文解读（默认）
 --language English  # 英文解读
 ```
 

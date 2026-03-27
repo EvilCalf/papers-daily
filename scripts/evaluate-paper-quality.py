@@ -20,6 +20,8 @@ from pathlib import Path
 import subprocess
 import sys
 from datetime import datetime
+import urllib.request
+import urllib.error
 import requests
 
 # 项目路径
@@ -211,7 +213,7 @@ def evaluate_single_paper_llm(paper_info, language="Chinese"):
 
 Please evaluate:"""
     
-    # 调用 Dashscope API（使用 OpenAI 兼容格式）
+    # 调用 Dashscope API（使用 urllib，requests 有兼容性问题）
     try:
         url = "https://coding.dashscope.aliyuncs.com/v1/chat/completions"
         
@@ -232,14 +234,17 @@ Please evaluate:"""
             "max_tokens": 200
         }
         
-        response = requests.post(url, headers=headers, json=payload, timeout=180)
+        print(f"  📡 调用 API...", file=sys.stderr)
         
-        if response.status_code != 200:
-            print(f"  ⚠️  API 错误：{response.status_code}", file=sys.stderr)
-            # 回退到规则评分
-            return evaluate_single_paper_rule_based(paper_info)
+        # 使用 urllib 调用 API
+        data = json.dumps(payload).encode('utf-8')
+        req = urllib.request.Request(url, data=data, headers=headers, method='POST')
         
-        result = response.json()
+        with urllib.request.urlopen(req, timeout=180) as response:
+            result = json.loads(response.read().decode('utf-8'))
+        
+        print(f"  📡 API 响应：200", file=sys.stderr)
+        
         llm_response = result.get('choices', [{}])[0].get('message', {}).get('content', '').strip()
         
         # 解析响应
@@ -248,8 +253,12 @@ Please evaluate:"""
         
         return score, reason
         
-    except requests.exceptions.Timeout:
-        print(f"  ⚠️  API 超时", file=sys.stderr)
+    except urllib.error.HTTPError as e:
+        print(f"  ⚠️  API 错误：{e.code}", file=sys.stderr)
+        # 回退到规则评分
+        return evaluate_single_paper_rule_based(paper_info)
+    except urllib.error.URLError as e:
+        print(f"  ⚠️  API 超时或网络错误：{e.reason}", file=sys.stderr)
         return evaluate_single_paper_rule_based(paper_info)
     except Exception as e:
         print(f"  ⚠️  评估失败：{e}", file=sys.stderr)
@@ -548,7 +557,8 @@ def main():
         sys.exit(1)
     
     # 执行评估（使用分批处理版本避免 OOM）
-    filtered = evaluate_all_papers_batched(run_dir, args.min_score, args.language, batch_size=10)
+    # 使用更小的 batch_size 防止超时
+    filtered = evaluate_all_papers_batched(run_dir, args.min_score, args.language, batch_size=5)
     
     # 输出结果
     print(f"\n✅ 质量评分完成！")
