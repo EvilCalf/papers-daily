@@ -335,39 +335,8 @@ def main():
     print(f"   保存论文：{len(papers_index)} 篇")
     print(f"   索引文件：{output_path / 'papers_index.json'}")
     print()
-    
-    # 下载论文源码（使用 arxiv-paper-processor 技能）
-    print(f"📥 下载论文源码...")
-    download_script = Path.home() / ".openclaw" / "workspace" / "skills" / "arxiv-paper-processor" / "scripts" / "download_papers_batch.py"
-    
-    if download_script.exists():
-        import subprocess
-        
-        cmd = [
-            "python3", str(download_script),
-            "--run-dir", str(output_path),
-            "--artifact", "source",
-            "--max-workers", "3",
-            "--min-interval-sec", "5"
-        ]
-        
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=2400)  # 40 分钟，足够下载 40 篇论文
-        print(result.stdout)
-        if result.stderr:
-            print(result.stderr)
-        
-        # 检查下载结果
-        source_count = 0
-        for paper_dir in output_path.iterdir():
-            if paper_dir.is_dir() and paper_dir.name.startswith("2603."):
-                source_dir = paper_dir / "source" / "source_extract"
-                if source_dir.exists() and list(source_dir.glob("*.tex")):
-                    source_count += 1
-        
-        print(f"✅ 源码下载完成：{source_count}/{len(papers_index)} 篇")
-    else:
-        print(f"⚠️  找不到下载脚本：{download_script}")
-        print(f"   跳过源码下载，只使用摘要")
+    print(f"✅ 检索完成！论文数据已保存")
+    print(f"   下一步：运行编排器进行 AI 评分和下载")
 
 if __name__ == "__main__":
     main()
