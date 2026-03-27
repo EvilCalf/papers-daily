@@ -17,25 +17,25 @@ from datetime import datetime
 # 配置
 MAX_WORKERS = 10  # 最大并发数
 TIMEOUT = 900  # 每篇论文超时时间（秒）- 15 分钟，因为要从 TeX 源码提取详细内容（8000-12000 字）
-MODEL = "qwen3.5-plus"  # 使用支持长上下文的模型
+MODEL = "arkcode/doubao-seed-2.0-pro"  # 使用 ARK 字节跳动豆包模型
 
 # 从 OpenClaw 配置读取 API key
 import json
 from pathlib import Path
 
-def load_dashscope_api_key():
-    """从 OpenClaw 配置加载 Dashscope API key"""
+def load_ark_api_key():
+    """从 OpenClaw 配置加载 ARK API key"""
     config_file = Path.home() / ".openclaw" / "openclaw.json"
     if config_file.exists():
         with open(config_file, 'r', encoding='utf-8') as f:
             config = json.load(f)
         models = config.get('models', {})
         providers = models.get('providers', {})
-        dashscope = providers.get('dashscope-aliyuncs-com', {})
-        return dashscope.get('apiKey')
+        arkcode = providers.get('arkcode', {})
+        return arkcode.get('apiKey')
     return None
 
-DASHSCOPE_API_KEY = load_dashscope_api_key()
+ARK_API_KEY = load_ark_api_key()
 
 def read_metadata_md(paper_dir):
     """读取 metadata.md"""
@@ -252,18 +252,18 @@ def interpret_paper(paper_id, paper_dir, summaries_output_dir, language="Chinese
         start_time = datetime.now()
         print(f"  📖 {paper_id}: 发送请求（超时{TIMEOUT//60}分钟）...", flush=True)
         
-        # 使用 OpenAI 兼容 API 调用（Dashscope coding 接口）
+        # 使用 OpenAI 兼容 API 调用（ARK 字节跳动豆包接口）
         import requests
         
-        base_url = "https://coding.dashscope.aliyuncs.com/v1"
+        base_url = "https://ark.cn-beijing.volces.com/api/coding/v1"
         
         headers = {
-            "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
+            "Authorization": f"Bearer {ARK_API_KEY}",
             "Content-Type": "application/json"
         }
         
         data = {
-            "model": MODEL,
+            "model": MODEL.split('/')[-1],  # 提取模型 ID（去掉前缀 arkcode/）
             "messages": [{"role": "user", "content": prompt}],
             "max_tokens": 4096  # 支持长输出（2000-3000 字解读）
         }

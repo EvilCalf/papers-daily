@@ -16,21 +16,21 @@ import gc
 WORKSPACE = Path.home() / ".openclaw" / "workspace"
 
 # LLM 配置
-MODEL = "qwen3.5-plus"
+MODEL = "arkcode/doubao-seed-2.0-pro"  # 使用 ARK 字节跳动豆包模型
 
-def load_dashscope_api_key():
-    """从 OpenClaw 配置加载 Dashscope API key"""
+def load_ark_api_key():
+    """从 OpenClaw 配置加载 ARK API key"""
     config_file = Path.home() / ".openclaw" / "openclaw.json"
     if config_file.exists():
         with open(config_file, 'r', encoding='utf-8') as f:
             config = json.load(f)
         models = config.get('models', {})
         providers = models.get('providers', {})
-        dashscope = providers.get('dashscope-aliyuncs-com', {})
-        return dashscope.get('apiKey')
+        arkcode = providers.get('arkcode', {})
+        return arkcode.get('apiKey')
     return None
 
-DASHSCOPE_API_KEY = load_dashscope_api_key()
+ARK_API_KEY = load_ark_api_key()
 
 def load_papers_index(run_dir):
     """加载论文索引"""
@@ -99,13 +99,13 @@ Please evaluate and respond in {language}. Format:
 理由：..."""
     
     try:
-        url = "https://coding.dashscope.aliyuncs.com/v1/chat/completions"
+        url = "https://ark.cn-beijing.volces.com/api/coding/v1/chat/completions"
         headers = {
-            "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
+            "Authorization": f"Bearer {ARK_API_KEY}",
             "Content-Type": "application/json"
         }
         payload = {
-            "model": MODEL,
+            "model": MODEL.split('/')[-1],  # 提取模型 ID（去掉前缀 arkcode/）
             "messages": [{"role": "user", "content": prompt}],
             "temperature": 0.3,
             "max_tokens": 200
