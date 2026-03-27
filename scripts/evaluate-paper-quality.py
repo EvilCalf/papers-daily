@@ -423,9 +423,87 @@ def evaluate_all_papers_parallel(run_dir, min_score=7, language="Chinese", max_w
 evaluate_all_papers = evaluate_all_papers_parallel
 
 
-def evaluate_all_papers_serial(run_dir, min_score=7, language="Chinese"):
-    """串行版本，用于内存受限环境"""
-    return evaluate_all_papers_parallel(run_dir, min_score, language, max_workers=2)
+def evaluate_all_papers_batched(run_dir, min_score=7, language="Chinese", batch_size=10):
+    """
+    分批处理版本，每批处理后保存结果并释放内存
+    避免 99 篇论文累积导致 OOM
+    """
+    import gc
+    import json
+    
+    print(f"\n🎯 AI 质量评分（分批处理，每批{batch_size}篇）")
+    print(f"   运行目录：{run_dir}")
+    print(f"   最低分数：{min_score}")
+    print(f"   输出语言：{language}")
+    print()
+    
+    # 加载论文
+    papers = load_papers_index(run_dir)
+    total = len(papers)
+    print(f"📚 待评估：{total} 篇")
+    print()
+    
+    scored_papers = []
+    score_distribution = {i: 0 for i in range(1, 11)}
+    
+    # 分批处理
+    for batch_idx in range(0, total, batch_size):
+        batch_end = min(batch_idx + batch_size, total)
+        batch = papers[batch_idx:batch_end]
+        print(f"📝 处理批次 {batch_idx//batch_size + 1}/{(total + batch_size - 1)//batch_size} (论文 {batch_idx+1}-{batch_end})")
+        
+        # 处理当前批次
+        for i, paper in enumerate(batch):
+            score, reason = evaluate_single_paper(paper, language)
+            paper['quality_score'] = score
+            paper['quality_reason'] = reason
+            score_distribution[score] += 1
+            
+            # 每 5 篇打印进度
+            if (batch_idx + i + 1) % 5 == 0:
+                print(f"  进度：{batch_idx + i + 1}/{total} 篇...")
+        
+        # 每批处理后保存中间结果并释放内存
+        save_papers_index(papers, run_dir)
+        gc.collect()
+        print(f"  批次完成，已保存中间结果\n")
+    
+    # 打印分数分布
+    print(f"\n📊 分数分布:")
+    for score in range(10, 0, -1):
+        count = score_distribution[score]
+        if count > 0:
+            bar = "█" * count
+            print(f"  {score}分：{bar} ({count}篇)")
+    
+    # 过滤
+    filtered = [p for p in scored_papers if p['quality_score'] >= min_score]
+    
+    # 按分数排序
+    filtered.sort(key=lambda x: x['quality_score'], reverse=True)
+    
+    # 限制最多 40 篇
+    MAX_PAPERS = 40
+    if len(filtered) > MAX_PAPERS:
+        print(f"✂️  限制最多 {MAX_PAPERS} 篇（当前 {len(filtered)} 篇，取前 {MAX_PAPERS} 篇高分）")
+        filtered = filtered[:MAX_PAPERS]
+    
+    print(f"\n📈 过滤结果:")
+    print(f"  原始：{total} 篇")
+    print(f"  ≥{min_score}分：{len(filtered)} 篇")
+    print(f"  过滤掉：{total - len(filtered)} 篇")
+    
+    # 保存结果
+    save_papers_index(scored_papers, run_dir)
+    
+    # 保存过滤后的索引
+    if len(filtered) < total:
+        filtered_path = Path(run_dir) / "papers_index_filtered.json"
+        with open(filtered_path, 'w', encoding='utf-8') as f:
+            json.dump(filtered, f, ensure_ascii=False, indent=2)
+        print(f"✅ 已保存过滤后索引：{filtered_path}")
+    
+    return filtered
 
 
 def main():
@@ -446,8 +524,8 @@ def main():
         print(f"❌ 找不到 papers_index.json")
         sys.exit(1)
     
-    # 执行评估（使用串行版本避免 OOM）
-    filtered = evaluate_all_papers_serial(run_dir, args.min_score, args.language)
+    # 执行评估（使用分批处理版本避免 OOM）
+    filtered = evaluate_all_papers_batched(run_dir, args.min_score, args.language, batch_size=10)
     
     # 输出结果
     print(f"\n✅ 质量评分完成！")
