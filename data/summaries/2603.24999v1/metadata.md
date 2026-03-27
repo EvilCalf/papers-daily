@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: Efficient Detection of Bad Benchmark Items with Novel Scalability Coefficients
+- **作者**: Michael Hardy, Joshua Gilbert, Benjamin Domingue
+- **ArXiv ID**: 2603.24999v1
+- **发布日期**: 2026-03-26
+- **主分类**: stat.AP
+- **分类**: stat.AP, cs.AI
+- **摘要**: The validity of assessments, from large-scale AI benchmarks to human classrooms, depends on the quality of individual items, yet modern evaluation instruments often contain thousands of items with minimal psychometric vetting. We introduce a new family of nonparametric scalability coefficients based on interitem isotonic regression for efficiently detecting globally bad items (e.g., miskeyed, ambiguously worded, or construct-misaligned). The central contribution is the signed isotonic $R^2$, which measures the maximal proportion of variance in one item explainable by a monotone function of another while preserving the direction of association via Kendall's $τ$. Aggregating these pairwise coefficients yields item-level scores that sharply separate problematic items from acceptable ones without assuming linearity or committing to a parametric item response model. We show that the signed isotonic $R^2$ is extremal among monotone predictors (it extracts the strongest possible monotone signal between any two items) and show that this optimality property translates directly into practical screening power. Across three AI benchmark datasets (HS Math, GSM8K, MMLU) and two human assessment datasets, the signed isotonic $R^2$ consistently achieves top-tier AUC for ranking bad items above good ones, outperforming or matching a comprehensive battery of classical test theory, item response theory, and dimensionality-based diagnostics. Crucially, the method remains robust under the small-n/large-p conditions typical of AI evaluation, requires only bivariate monotone fits computable in seconds, and handles mixed item types (binary, ordinal, continuous) without modification. It is a lightweight, model-agnostic filter that can materially reduce the reviewer effort needed to find flawed items in modern large-scale evaluation regimes.
+- **PDF 链接**: https://arxiv.org/pdf/2603.24999v1

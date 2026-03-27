@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: On the Foundations of Trustworthy Artificial Intelligence
+- **作者**: TJ Dunham
+- **ArXiv ID**: 2603.24904v1
+- **发布日期**: 2026-03-26
+- **主分类**: cs.AI
+- **分类**: cs.AI, cs.CR
+- **摘要**: We prove that platform-deterministic inference is necessary and sufficient for   trustworthy AI. We formalize this as the Determinism Thesis and introduce trust   entropy to quantify the cost of non-determinism, proving that verification failure   probability equals 1 - 2^{-H_T} exactly. We prove a Determinism-Verification   Collapse: verification under determinism requires O(1) hash comparison; without it,   the verifier faces an intractable membership problem. IEEE 754 floating-point   arithmetic fundamentally violates the determinism requirement. We resolve this by   constructing a pure integer inference engine that achieves bitwise identical output   across ARM and x86. In 82 cross-architecture tests on models up to 6.7B parameters,   we observe zero hash mismatches. Four geographically distributed nodes produce   identical outputs, verified by 356 on-chain attestation transactions. Every major   trust property of AI systems (fairness, robustness, privacy, safety, alignment)   presupposes platform determinism. Our system, 99,000 lines of Rust deployed across   three continents, establishes that AI trust is a question of arithmetic.
+- **PDF 链接**: https://arxiv.org/pdf/2603.24904v1

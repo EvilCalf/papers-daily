@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: Large Language Models as Optimization Controllers: Adaptive Continuation for SIMP Topology Optimization
+- **作者**: Shaoliang Yang, Jun Wang, Yunsheng Wang
+- **ArXiv ID**: 2603.25099v1
+- **发布日期**: 2026-03-26
+- **主分类**: cs.CE
+- **分类**: cs.CE, cs.AI
+- **摘要**: We present a framework in which a large language model (LLM) acts as an online adaptive controller for SIMP topology optimization, replacing conventional fixed-schedule continuation with real-time, state-conditioned parameter decisions. At every $k$-th iteration, the LLM receives a structured observation$-$current compliance, grayness index, stagnation counter, checkerboard measure, volume fraction, and budget consumption$-$and outputs numerical values for the penalization exponent $p$, projection sharpness $β$, filter radius $r_{\min}$, and move limit $δ$ via a Direct Numeric Control interface. A hard grayness gate prevents premature binarization, and a meta-optimization loop uses a second LLM pass to tune the agent's call frequency and gate threshold across runs. We benchmark the agent against four baselines$-$fixed (no-continuation), standard three-field continuation, an expert heuristic, and a schedule-only ablation$-$on three 2-D problems (cantilever, MBB beam, L-bracket) at $120\!\times\!60$ resolution and two 3-D problems (cantilever, MBB beam) at $40\!\times\!20\!\times\!10$ resolution, all run for 300 iterations. A standardized 40-iteration sharpening tail is applied from the best valid snapshot so that compliance differences reflect only the exploration phase. The LLM agent achieves the lowest final compliance on every benchmark: $-5.7\%$ to $-18.1\%$ relative to the fixed baseline, with all solutions fully binary. The schedule-only ablation underperforms the fixed baseline on two of three problems, confirming that the LLM's real-time intervention$-$not the schedule geometry$-$drives the gain. Code and reproduction scripts will be released upon publication.
+- **PDF 链接**: https://arxiv.org/pdf/2603.25099v1

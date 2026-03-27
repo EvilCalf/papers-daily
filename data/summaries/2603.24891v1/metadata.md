@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: Surrogates, Spikes, and Sparsity: Performance Analysis and Characterization of SNN Hyperparameters on Hardware
+- **作者**: Ilkin Aliyev, Jesus Lopez, Tosiron Adegbija
+- **ArXiv ID**: 2603.24891v1
+- **发布日期**: 2026-03-26
+- **主分类**: cs.AR
+- **分类**: cs.AR, cs.AI
+- **摘要**: Spiking Neural Networks (SNNs) offer inherent advantages for low-power inference through sparse, event-driven computation. However, the theoretical energy benefits of SNNs are often decoupled from real hardware performance due to the opaque relationship between training-time choices and inference-time sparsity. While prior work has focused on weight pruning and compression, the role of training hyperparameters -- specifically surrogate gradient functions and neuron model configurations -- in shaping hardware-level activation sparsity remains underexplored.   This paper presents a workload characterization study quantifying the sensitivity of hardware latency to SNN hyperparameters. We decouple the impact of surrogate gradient functions (e.g., Fast Sigmoid, Spike Rate Escape) and neuron models (LIF, Lapicque) on classification accuracy and inference efficiency across three event-based vision datasets: DVS128-Gesture, N-MNIST, and DVS-CIFAR10. Our analysis reveals that standard accuracy metrics are poor predictors of hardware efficiency. While Fast Sigmoid achieves the highest accuracy on DVS-CIFAR10, Spike Rate Escape reduces inference latency by up to 12.2% on DVS128-Gesture with minimal accuracy trade-offs. We also demonstrate that neuron model selection is as critical as parameter tuning; transitioning from LIF to Lapicque neurons yields up to 28% latency reduction. We validate on a custom cycle-accurate FPGA-based SNN instrumentation platform, showing that sparsity-aware hyperparameter selection can improve accuracy by 9.1% and latency by over 2x compared to baselines. These findings establish a methodology for predicting hardware behavior from training parameters. The RTL and reproducibility artifacts are at https://zenodo.org/records/18893738.
+- **PDF 链接**: https://arxiv.org/pdf/2603.24891v1

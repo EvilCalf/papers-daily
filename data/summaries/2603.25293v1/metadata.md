@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: DAGverse: Building Document-Grounded Semantic DAGs from Scientific Papers
+- **作者**: Shu Wan, Saketh Vishnubhatla, Iskander Kushbay, Tom Heffernan, Aaron Belikoff et al.
+- **ArXiv ID**: 2603.25293v1
+- **发布日期**: 2026-03-26
+- **主分类**: cs.AI
+- **分类**: cs.AI, cs.CL
+- **摘要**: Directed Acyclic Graphs (DAGs) are widely used to represent structured knowledge in scientific and technical domains. However, datasets for real-world DAGs remain scarce because constructing them typically requires expert interpretation of domain documents. We study Doc2SemDAG construction: recovering a preferred semantic DAG from a document together with the cited evidence and context that explain it. This problem is challenging because a document may admit multiple plausible abstractions, the intended structure is often implicit, and the supporting evidence is scattered across prose, equations, captions, and figures. To address these challenges, we leverage scientific papers containing explicit DAG figures as a natural source of supervision. In this setting, the DAG figure provides the DAG structure, while the accompanying text provides context and explanation. We introduce DAGverse, a framework for constructing document-grounded semantic DAGs from online scientific papers. Its core component, DAGverse-Pipeline, is a semi-automatic system designed to produce high-precision semantic DAG examples through figure classification, graph reconstruction, semantic grounding, and validation. As a case study, we test the framework for causal DAGs and release DAGverse-1, a dataset of 108 expert-validated semantic DAGs with graph-level, node-level, and edge-level evidence. Experiments show that DAGverse-Pipeline outperforms existing Vision-Language Models on DAG classification and annotation. DAGverse provides a foundation for document-grounded DAG benchmarks and opens new directions for studying structured reasoning grounded in real-world evidence.
+- **PDF 链接**: https://arxiv.org/pdf/2603.25293v1

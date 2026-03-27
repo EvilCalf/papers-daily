@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: Factors Influencing the Quality of AI-Generated Code: A Synthesis of Empirical Evidence
+- **作者**: Vehid Geruslu, Zulfiyya Aliyeva, Eray Tüzün
+- **ArXiv ID**: 2603.25146v1
+- **发布日期**: 2026-03-26
+- **主分类**: cs.SE
+- **分类**: cs.SE, cs.AI
+- **摘要**: Context: The rapid adoption of AI-assisted code generation tools, such as large language models (LLMs), is transforming software development practices. While these tools promise significant productivity gains, concerns regarding the quality, reliability, and security of AI-generated code are increasingly reported in both academia and industry. --Objective: This study aims to systematically synthesize existing empirical evidence on the factors influencing the quality of AI-generated source code and to analyze how these factors impact software quality outcomes across different evaluation contexts. --Method: We conducted a systematic literature review (SLR) following established guidelines, supported by an AI-assisted workflow with human oversight. A total of 24 primary studies were selected through a structured search and screening process across major digital libraries. Data were extracted and analyzed using qualitative, pattern-based evidence synthesis. --Results: The findings reveal that code quality in AI-assisted development is influenced by a combination of human factors, AI system characteristics, and human AI interaction dynamics. Key influencing factors include prompt design, task specification, and developer expertise. The results also show variability in quality outcomes such as correctness, security, maintainability, and complexity across studies, with both improvements and risks reported. --Conclusion: AI-assisted code generation represents a socio-technical shift in software engineering, where achieving high-quality outcomes depends on both technological and human factors. While promising, AI-generated code requires careful validation and integration into development workflows.
+- **PDF 链接**: https://arxiv.org/pdf/2603.25146v1

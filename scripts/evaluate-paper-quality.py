@@ -423,6 +423,11 @@ def evaluate_all_papers_parallel(run_dir, min_score=7, language="Chinese", max_w
 evaluate_all_papers = evaluate_all_papers_parallel
 
 
+def evaluate_all_papers_serial(run_dir, min_score=7, language="Chinese"):
+    """串行版本，用于内存受限环境"""
+    return evaluate_all_papers_parallel(run_dir, min_score, language, max_workers=2)
+
+
 def main():
     parser = argparse.ArgumentParser(description="AI 论文质量评分")
     parser.add_argument("--run-dir", required=True, help="运行目录")
@@ -441,8 +446,8 @@ def main():
         print(f"❌ 找不到 papers_index.json")
         sys.exit(1)
     
-    # 执行评估
-    filtered = evaluate_all_papers(run_dir, args.min_score, args.language)
+    # 执行评估（使用串行版本避免 OOM）
+    filtered = evaluate_all_papers_serial(run_dir, args.min_score, args.language)
     
     # 输出结果
     print(f"\n✅ 质量评分完成！")

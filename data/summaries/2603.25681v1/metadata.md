@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: Self-Improvement of Large Language Models: A Technical Overview and Future Outlook
+- **作者**: Haoyan Yang, Mario Xerri, Solha Park, Huajian Zhang, Yiyang Feng et al.
+- **ArXiv ID**: 2603.25681v1
+- **发布日期**: 2026-03-26
+- **主分类**: cs.CL
+- **分类**: cs.CL
+- **摘要**: As large language models (LLMs) continue to advance, improving them solely through human supervision is becoming increasingly costly and limited in scalability. As models approach human-level capabilities in certain domains, human feedback may no longer provide sufficiently informative signals for further improvement. At the same time, the growing ability of models to make autonomous decisions and execute complex actions naturally enables abstractions in which components of the model development process can be progressively automated. Together, these challenges and opportunities have driven increasing interest in self-improvement, where models autonomously generate data, evaluate outputs, and iteratively refine their own capabilities. In this paper, we present a system-level perspective on self-improving language models and introduce a unified framework that organizes existing techniques. We conceptualize the self-improvement system as a closed-loop lifecycle, consisting of four tightly coupled processes: data acquisition, data selection, model optimization, and inference refinement, along with an autonomous evaluation layer. Within this framework, the model itself plays a central role in driving each stage: collecting or generating data, selecting informative signals, updating its parameters, and refining outputs, while the autonomous evaluation layer continuously monitors progress and guides the improvement cycle across stages. Following this lifecycle perspective, we systematically review and analyze representative methods for each component from a technical standpoint. We further discuss current limitations and outline our vision for future research toward fully self-improving LLMs.
+- **PDF 链接**: https://arxiv.org/pdf/2603.25681v1

@@ -1,0 +1,10 @@
+## 基本信息
+
+- **标题**: TAPO: Translation Augmented Policy Optimization for Multilingual Mathematical Reasoning
+- **作者**: Xu Huang, Zhejian Lai, Zixian Huang, Jiajun Chen, Shujian Huang
+- **ArXiv ID**: 2603.25419v1
+- **发布日期**: 2026-03-26
+- **主分类**: cs.CL
+- **分类**: cs.CL
+- **摘要**: Large Language Models (LLMs) have demonstrated remarkable proficiency in English mathematical reasoning, yet a significant performance disparity persists in multilingual contexts, largely attributed to deficiencies in language understanding. To bridge this gap, we introduce Translation-Augmented Policy Optimization (TAPO), a novel reinforcement learning framework built upon GRPO. TAPO enforces an explicit alignment strategy where the model leverages English as a pivot and follows an understand-then-reason paradigm. Crucially, we employ a step-level relative advantage mechanism that decouples understanding from reasoning, allowing the integration of translation quality rewards without introducing optimization conflicts. Extensive experiments reveal that TAPO effectively synergizes language understanding with reasoning capabilities and is compatible with various models. It outperforms baseline methods in both multilingual mathematical reasoning and translation tasks, while generalizing well to unseen languages and out-of-domain tasks.
+- **PDF 链接**: https://arxiv.org/pdf/2603.25419v1

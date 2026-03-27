@@ -73,7 +73,7 @@ def search_arxiv(query, max_results=50, date_from=None, date_to=None):
         print(f"❌ 搜索失败：{e}")
         return None
 
-def search_arxiv_combined(combined_query, max_results=250, date_from=None, date_to=None, retry_count=0):
+def search_arxiv_combined(combined_query, max_results=250, date_from=None, date_to=None):
     """搜索 arXiv（组合查询，多个关键词用 OR 连接）"""
     base_url = "https://export.arxiv.org/api/query"
     
@@ -101,20 +101,6 @@ def search_arxiv_combined(combined_query, max_results=250, date_from=None, date_
     try:
         with urllib.request.urlopen(url, timeout=60) as response:
             return response.read().decode('utf-8')
-    except urllib.error.HTTPError as e:
-        if e.code == 429:
-            # 速率限制，等待 60 秒后重试
-            wait_time = 60 + (retry_count * 30)  # 指数退避
-            print(f"⚠️  遇到速率限制 (429)，等待 {wait_time} 秒后重试...（第{retry_count + 1}次）")
-            time.sleep(wait_time)
-            if retry_count < 3:  # 最多重试 3 次
-                return search_arxiv_combined(combined_query, max_results, date_from, date_to, retry_count + 1)
-            else:
-                print(f"❌ 达到最大重试次数，放弃请求")
-                return None
-        else:
-            print(f"❌ HTTP 错误：{e.code} - {e.reason}")
-            return None
     except Exception as e:
         print(f"❌ 搜索失败：{e}")
         return None

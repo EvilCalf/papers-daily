@@ -261,8 +261,22 @@ def stage_a_quality_filter(run_dir, min_score=7, language="Chinese"):
         return True
 
 def stage_b_download(run_dir, language="Chinese"):
-    """Stage B.1: 批量下载论文（允许部分失败）"""
-    log_stage_start("Stage B.1", "批量下载论文")
+    """Stage B.1: 批量下载论文（允许部分失败）- 只下载质量评分≥8 分的论文"""
+    log_stage_start("Stage B.1", "批量下载论文（仅高质量）")
+    
+    # 检查是否有过滤后的索引
+    filtered_index = Path(run_dir) / "papers_index_filtered.json"
+    original_index = Path(run_dir) / "papers_index.json"
+    
+    if filtered_index.exists():
+        # 备份原始索引
+        import shutil
+        shutil.copy2(original_index, original_index.with_suffix('.json.bak'))
+        # 使用过滤后的索引
+        shutil.move(str(filtered_index), str(original_index))
+        logger.info("✅ 使用质量过滤后的索引（仅≥8 分）")
+    else:
+        logger.warning("⚠️  无质量过滤索引，使用全部论文")
     
     logger.info(f"超时设置：1800 秒（30 分钟）")
     
@@ -270,7 +284,7 @@ def stage_b_download(run_dir, language="Chinese"):
         cmd = [
             "python3", str(PAPER_PROCESSOR / "scripts" / "download_papers_batch.py"),
             "--run-dir", str(run_dir),
-            "--artifact", "source_then_pdf",
+            "--artifact", "source",
             "--max-workers", "3",
             "--min-interval-sec", "5",
             "--language", language
@@ -560,20 +574,21 @@ def main():
     
     total_start = datetime.now()
     
-    # Stage A: 检索 + 质量过滤
+    # Stage A: 检索
     if args.stage in ["A", "all"]:
         if not stage_a_search(push_date, from_date, to_date, run_dir, args.lookback, args.language):
             logger.error("Stage A 失败")
             print_perf_summary()
             return 1
         
-        # Stage A.2: 质量评分过滤（≥8 分保留）
+        logger.info(f"Stage A 检索完成：{run_dir}")
+    
+    # Stage A.2: 质量评分过滤（≥8 分保留）- 在下载之前执行
+    if args.stage in ["A", "all"]:
         if not stage_a_quality_filter(run_dir, min_score=8, language=args.language):
-            logger.error("Stage A.2 质量过滤失败")
-            print_perf_summary()
-            return 1
-        
-        logger.info(f"Stage A 完成（检索 + 质量过滤）：{run_dir}")
+            logger.warning("Stage A.2 质量过滤失败，继续执行（使用全部论文）")
+        else:
+            logger.info(f"Stage A.2 质量过滤完成")
     else:
         # 使用指定的运行目录
         run_dir = Path(TMP_DIR / "papers-orchestrator" / f"llm-ai-agent-{push_date}")
