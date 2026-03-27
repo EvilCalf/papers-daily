@@ -438,6 +438,7 @@ def evaluate_all_papers_batched(run_dir, min_score=7, language="Chinese", batch_
     """
     import gc
     import json
+    import shutil
     
     print(f"\n🎯 AI 质量评分（分批处理，每批{batch_size}篇）")
     print(f"   运行目录：{run_dir}")
@@ -445,14 +446,25 @@ def evaluate_all_papers_batched(run_dir, min_score=7, language="Chinese", batch_
     print(f"   输出语言：{language}")
     print()
     
+    # 备份原始索引
+    index_path = Path(run_dir) / "papers_index.json"
+    backup_path = Path(run_dir) / "papers_index.json.backup"
+    if index_path.exists():
+        shutil.copy2(index_path, backup_path)
+        print(f"📋 已备份原始索引：{backup_path}")
+    
     # 加载论文
     papers = load_papers_index(run_dir)
     total = len(papers)
     print(f"📚 待评估：{total} 篇")
     print()
     
-    scored_papers = []
+    if total == 0:
+        print("⚠️  警告：没有论文可评估！")
+        return []
+    
     score_distribution = {i: 0 for i in range(1, 11)}
+    completed = 0
     
     # 分批处理
     for batch_idx in range(0, total, batch_size):
@@ -466,15 +478,16 @@ def evaluate_all_papers_batched(run_dir, min_score=7, language="Chinese", batch_
             paper['quality_score'] = score
             paper['quality_reason'] = reason
             score_distribution[score] += 1
+            completed += 1
             
             # 每 5 篇打印进度
-            if (batch_idx + i + 1) % 5 == 0:
-                print(f"  进度：{batch_idx + i + 1}/{total} 篇...")
+            if completed % 5 == 0:
+                print(f"  进度：{completed}/{total} 篇...")
         
         # 每批处理后保存中间结果并释放内存
         save_papers_index(papers, run_dir)
         gc.collect()
-        print(f"  批次完成，已保存中间结果\n")
+        print(f"  批次完成，已保存中间结果（已评 {completed}/{total} 篇）\n")
     
     # 打印分数分布
     print(f"\n📊 分数分布:")
@@ -485,10 +498,10 @@ def evaluate_all_papers_batched(run_dir, min_score=7, language="Chinese", batch_
             print(f"  {score}分：{bar} ({count}篇)")
     
     # 过滤
-    filtered = [p for p in scored_papers if p['quality_score'] >= min_score]
+    filtered = [p for p in papers if p.get('quality_score', 0) >= min_score]
     
     # 按分数排序
-    filtered.sort(key=lambda x: x['quality_score'], reverse=True)
+    filtered.sort(key=lambda x: x.get('quality_score', 0), reverse=True)
     
     # 限制最多 40 篇
     MAX_PAPERS = 40
@@ -501,15 +514,17 @@ def evaluate_all_papers_batched(run_dir, min_score=7, language="Chinese", batch_
     print(f"  ≥{min_score}分：{len(filtered)} 篇")
     print(f"  过滤掉：{total - len(filtered)} 篇")
     
-    # 保存结果
-    save_papers_index(scored_papers, run_dir)
-    
-    # 保存过滤后的索引
+    # 保存过滤后的索引（不覆盖原始索引）
     if len(filtered) < total:
         filtered_path = Path(run_dir) / "papers_index_filtered.json"
         with open(filtered_path, 'w', encoding='utf-8') as f:
             json.dump(filtered, f, ensure_ascii=False, indent=2)
         print(f"✅ 已保存过滤后索引：{filtered_path}")
+    
+    # 删除备份
+    if backup_path.exists():
+        backup_path.unlink()
+        print(f"🗑️  已删除备份文件")
     
     return filtered
 
