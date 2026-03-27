@@ -210,12 +210,12 @@ def builtin_search(date, from_date, to_date, lookback="1d"):
     log_stage_end("Stage A", "使用内置检索（简化）")
     return True
 
-def stage_a_quality_filter(run_dir, min_score=7, language="Chinese"):
+def stage_a_quality_filter(run_dir, min_score=9, language="Chinese"):
     """Stage A.2: AI 质量评分过滤"""
     log_stage_start("Stage A.2", "AI 质量评分过滤")
     
     logger.info(f"运行目录：{run_dir}")
-    logger.info(f"最低分数：{min_score}")
+    logger.info(f"最低分数：{min_score}（严格模式）")
     
     eval_script = Path(__file__).parent / "evaluate-paper-quality.py"
     
@@ -583,9 +583,9 @@ def main():
         
         logger.info(f"Stage A 检索完成：{run_dir}")
     
-    # Stage A.2: 质量评分过滤（≥8 分保留）- 在下载之前执行
+    # Stage A.2: 质量评分过滤（≥9 分保留）- 在下载之前执行
     if args.stage in ["A", "all"]:
-        if not stage_a_quality_filter(run_dir, min_score=8, language=args.language):
+        if not stage_a_quality_filter(run_dir, min_score=9, language=args.language):
             logger.warning("Stage A.2 质量过滤失败，继续执行（使用全部论文）")
         else:
             logger.info(f"Stage A.2 质量过滤完成")

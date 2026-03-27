@@ -155,22 +155,26 @@ def evaluate_single_paper_llm(paper_info, language="Chinese"):
 **摘要**：
 {summary}
 
-**评分标准**（1-10 分，严格评分）：
-- 9-10 分：突破性工作，有理论证明 + 充分实验（≥3 个数据集/任务），明确超越 SOTA
-- 7-8 分：扎实工作，有清晰方法创新，实验设计合理（≥2 个对比基线），性能提升明确
-- 5-6 分：增量改进，方法创新有限，或实验不够充分（<2 个基线/数据集）
-- 1-4 分：低质量，纯应用无创新，或重复已有研究，或缺少实验验证
+**评分标准**（1-10 分，**极其严格**评分）：
+- **10 分**：里程碑式突破，理论 + 实验双重大创新，多个数据集验证，性能大幅提升（>10%），被广泛引用的潜力
+- **9 分**：重大创新，方法新颖，实验充分（≥4 个数据集/任务），明确超越 SOTA 且有量化指标
+- **7-8 分**：扎实工作，有清晰方法创新，实验合理（≥3 个对比基线），性能提升明确
+- **5-6 分**：增量改进，方法创新有限，或实验不够充分（<3 个基线/数据集）
+- **1-4 分**：低质量，纯应用无创新，或重复已有研究，或缺少实验验证
 
-**关键评分维度**（必须同时满足才能得高分）：
-1. 创新性（40%）：是否提出新方法/新框架/新理论？纯应用/综述最高 6 分
-2. 实验充分性（40%）：是否有对比实验？基线数量？数据集数量？无实验最高 4 分
-3. 性能提升（20%）：是否明确超越 SOTA？无量化指标最高 5 分
+**关键评分维度**（必须同时满足才能得 9 分以上）：
+1. **创新性**（50%）：是否提出全新方法/框架/理论？纯应用/综述/改进型最高 7 分
+2. **实验充分性**（30%）：是否有对比实验？基线数量≥4？数据集数量≥3？无实验最高 3 分
+3. **性能提升**（20%）：是否明确超越 SOTA 且有具体数字？无量化指标最高 4 分
 
-**扣分项**：
-- 摘要模糊，无法识别核心贡献：-2 分
-- 自称"SOTA"但无具体数据支持：-2 分
-- 纯工程应用，无方法创新：最高 6 分
-- 缺少量化指标（只有"显著提升"等模糊描述）：-2 分
+**严格扣分项**（必须执行）：
+- 摘要模糊，无法识别核心贡献：-3 分
+- 自称"SOTA"但无具体数据支持：-3 分
+- 纯工程应用，无方法创新：最高 5 分
+- 缺少量化指标（只有"显著提升"等模糊描述）：-3 分
+- 综述/Survey 类型：最高 6 分
+- 纯理论无实验：最高 5 分
+- 只在 1 个数据集上验证：最高 6 分
 
 **输出格式**（严格遵守，只返回一行）：
 分数：[1-10 的数字] 理由：[1 句话说明评分理由]
@@ -184,22 +188,26 @@ def evaluate_single_paper_llm(paper_info, language="Chinese"):
 **Abstract**:
 {summary}
 
-**Scoring Criteria** (1-10, strict evaluation):
-- 9-10: Breakthrough work, theoretical proof + extensive experiments (≥3 datasets/tasks), clear SOTA improvement
-- 7-8: Solid work, clear method innovation, reasonable experiments (≥2 baselines), explicit performance gain
-- 5-6: Incremental improvement, limited innovation, or insufficient experiments (<2 baselines/datasets)
-- 1-4: Low quality, pure application without innovation, or repetition, or no experimental validation
+**Scoring Criteria** (1-10, **EXTREMELY STRICT** evaluation):
+- **10**: Milestone breakthrough, theoretical + experimental innovation, multiple datasets (>3), significant improvement (>10%), high citation potential
+- **9**: Major innovation, novel method, extensive experiments (≥4 datasets/tasks), clear SOTA with quantitative metrics
+- **7-8**: Solid work, clear method innovation, reasonable experiments (≥3 baselines), explicit performance gain
+- **5-6**: Incremental improvement, limited innovation, or insufficient experiments (<3 baselines/datasets)
+- **1-4**: Low quality, pure application without innovation, repetition, or no experimental validation
 
-**Key Dimensions** (all required for high score):
-1. Novelty (40%): New method/framework/theory? Pure application/survey max 6
-2. Experiments (40%): Comparative experiments? Number of baselines? datasets? No experiments max 4
-3. Performance (20%): Clear SOTA improvement? No quantitative metrics max 5
+**Key Dimensions** (ALL required for 9+ score):
+1. **Novelty** (50%): New method/framework/theory? Pure application/survey/improvement max 7
+2. **Experiments** (30%): Comparative experiments? ≥4 baselines? ≥3 datasets? No experiments max 3
+3. **Performance** (20%): Clear SOTA with concrete numbers? No quantitative metrics max 4
 
-**Penalties**:
-- Vague abstract, unclear contribution: -2
-- Claims "SOTA" without concrete data: -2
-- Pure engineering, no method innovation: max 6
-- No quantitative metrics (only "significant improvement"): -2
+**Strict Penalties** (MUST apply):
+- Vague abstract, unclear contribution: -3
+- Claims "SOTA" without concrete data: -3
+- Pure engineering, no method innovation: max 5
+- No quantitative metrics (only "significant improvement"): -3
+- Survey/Review paper: max 6
+- Theory only, no experiments: max 5
+- Validated on only 1 dataset: max 6
 
 Please evaluate:"""
     
