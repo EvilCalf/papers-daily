@@ -358,7 +358,7 @@ def update_reports_json(papers_data, push_date, date_range, data_dir):
     """更新 reports.json 索引"""
     reports_file = data_dir / "reports.json"
     
-    # 统计 LLM 和 Agent 数量
+    # 统计 LLM 和 Agent 数量（基于实际过滤后的论文列表）
     llm_count = sum(1 for p in papers_data if 'llm' in p.get('title', '').lower() or p.get('primary_category') == 'cs.CL')
     agent_count = sum(1 for p in papers_data if 'agent' in p.get('title', '').lower() or p.get('primary_category') == 'cs.AI')
     
@@ -868,8 +868,9 @@ def main():
     # 读取 papers_index.json
     papers_index = run_dir / "papers_index.json"
     if not papers_index.exists():
-        print(f"❌ papers_index.json 不存在")
-        return
+        print(f"❌ 错误：papers_index.json 文件不存在于目录 {run_dir}")
+        print("💡 可能是编排器运行失败或未完成论文爬取，请先检查 upstream 任务状态")
+        sys.exit(1)
     
     with open(papers_index, 'r') as f:
         papers_list = json.load(f)
