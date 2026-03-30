@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日论文推送 - EvilCalf</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>😈</text></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #a855f7;
+            --secondary: #6366f1;
+            --accent: #ec4899;
+            --glow: #c084fc;
+            --bg-dark: #0f0c29;
+            --card-bg: rgba(30, 30, 50, 0.8);
+        }
+        
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a1a2e);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #fff;
+            padding: 40px 20px;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(168, 85, 247, 0.6);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+            box-shadow: 0 0 10px var(--glow), 0 0 20px var(--primary);
+        }
+        
+        .particle:nth-child(2) { left: 20%; animation-delay: -2s; animation-duration: 12s; }
+        .particle:nth-child(3) { left: 40%; animation-delay: -4s; animation-duration: 18s; }
+        .particle:nth-child(4) { left: 60%; animation-delay: -6s; animation-duration: 14s; }
+        .particle:nth-child(5) { left: 80%; animation-delay: -8s; animation-duration: 16s; }
+        .particle:nth-child(6) { left: 10%; animation-delay: -3s; animation-duration: 20s; background: rgba(236, 72, 153, 0.5); }
+        .particle:nth-child(7) { left: 30%; animation-delay: -5s; animation-duration: 13s; background: rgba(99, 102, 241, 0.5); }
+        .particle:nth-child(8) { left: 50%; animation-delay: -7s; animation-duration: 17s; }
+        .particle:nth-child(9) { left: 70%; animation-delay: -1s; animation-duration: 11s; background: rgba(236, 72, 153, 0.5); }
+        .particle:nth-child(10) { left: 90%; animation-delay: -9s; animation-duration: 19s; background: rgba(99, 102, 241, 0.5); }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% { opacity: 1; transform: translateY(90vh) scale(1); }
+            90% { opacity: 1; transform: translateY(10vh) scale(1); }
+            100% {
+                transform: translateY(-10vh) scale(0);
+                opacity: 0;
+            }
+        }
+        
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* 登录状态区域 */
+        .login-section {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        
+        .login-btn, .user-info {
+            background: rgba(168, 85, 247, 0.3);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+        
+        .login-btn:hover, .user-info:hover {
+            background: rgba(168, 85, 247, 0.5);
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+        }
+        
+        .user-info {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+        
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 10px;
+            background: rgba(30, 30, 50, 0.95);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            border-radius: 10px;
+            padding: 10px;
+            min-width: 150px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .user-info:hover .user-dropdown {
+            display: block;
+        }
+        
+        .user-dropdown a {
+            display: block;
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+        
+        .user-dropdown a:hover {
+            background: rgba(168, 85, 247, 0.3);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            box-shadow: 0 8px 32px rgba(168, 85, 247, 0.2);
+        }
+        
+        h1 {
+            font-size: 3em;
+            background: linear-gradient(135deg, #fff, var(--glow), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            text-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+        }
+        
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+        
+        .description {
+            max-width: 600px;
+            margin: 0 auto;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+        
+        .stat-card {
+            background: rgba(168, 85, 247, 0.15);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.3);
+            background: rgba(168, 85, 247, 0.25);
+        }
+        
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--glow), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1em;
+        }
+        
+        .latest-section {
+            margin-bottom: 60px;
+        }
+        
+        .section-title {
+            font-size: 2em;
+            color: var(--glow);
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .section-title::before {
+            content: '📚';
+            font-size: 1.2em;
+        }
+        
+        .latest-card {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(99, 102, 241, 0.2));
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .latest-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(168, 85, 247, 0.4);
+            border-color: var(--glow);
+        }
+        
+        .latest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .latest-date {
+            font-size: 1.5em;
+            color: var(--glow);
+            font-weight: 600;
+        }
+        
+        .latest-badge {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        .latest-stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        
+        .latest-stat {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .latest-stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--glow);
+        }
+        
+        .latest-stat-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9em;
+        }
+        
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .history-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .history-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(168, 85, 247, 0.3);
+            border-color: var(--primary);
+            background: rgba(168, 85, 247, 0.15);
+        }
+        
+        .history-date {
+            font-size: 1.3em;
+            color: var(--glow);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .history-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .history-stat {
+            background: rgba(168, 85, 247, 0.2);
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* 评分和投票组件 */
+        .rating-votes-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(168, 85, 247, 0.3);
+        }
+        
+        .rating-display {
+            background: rgba(168, 85, 247, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+        
+        .rating-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .rating-title {
+            font-size: 1.2em;
+            color: var(--glow);
+            font-weight: 600;
+        }
+        
+        .rating-edit-btn {
+            background: rgba(236, 72, 153, 0.3);
+            border: 1px solid rgba(236, 72, 153, 0.5);
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+        
+        .rating-edit-btn:hover {
+            background: rgba(236, 72, 153, 0.5);
+        }
+        
+        .stars {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .score-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .score-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .score-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--glow);
+        }
+        
+        .score-label {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .rating-reason {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.95em;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .votes-display {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .vote-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .vote-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .vote-btn.up:hover {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+        
+        .vote-btn.down:hover {
+            background: rgba(244, 67, 54, 0.3);
+            border-color: rgba(244, 67, 54, 0.5);
+        }
+        
+        .vote-count {
+            font-weight: bold;
+            min-width: 30px;
+        }
+        
+        .loading-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(168, 85, 247, 0.3);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .empty-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 80px;
+            padding: 30px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9em;
+        }
+        
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            color: var(--glow);
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 20px 10px; }
+            h1 { font-size: 2em; }
+            header { padding: 30px 20px; }
+            .latest-header { flex-direction: column; align-items: flex-start; }
+            .latest-stats { flex-wrap: wrap; }
+            .history-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <!-- 登录状态区域 -->
+        <div class="login-section" data-login-section>
+            <a href="/login.html" class="login-btn">🔐 登录</a>
+        </div>
+        
+        <header>
+            <h1>📚 每日论文推送</h1>
+            <p class="subtitle">LLM / Agent 领域最新研究精选</p>
+            <p class="description">
+                每天自动检索 arXiv 上的 LLM 和 AI Agent 相关论文，<br>
+                使用 AI 深度解读每篇论文的核心方法、实验结果和实际价值
+            </p>
+        </header>
+
+        <div class="stats-grid" id="stats-grid"></div>
+
+        <div class="latest-section" id="latest-section" style="display: none;">
+            <h2 class="section-title">最新推送</h2>
+            <a href="#" class="latest-card" id="latest-card">
+                <div class="latest-header">
+                    <div class="latest-date" id="latest-date"></div>
+                    <div class="latest-badge">NEW</div>
+                </div>
+                <div class="latest-stats">
+                    <div class="latest-stat">
+                        <div class="latest-stat-value" id="latest-count"></div>
+                        <div class="latest-stat-label">论文总数</div>
+                    </div>
+                    <div class="latest-stat">
+                        <div class="latest-stat-value" id="latest-llm"></div>
+                        <div class="latest-stat-label">LLM</div>
+                    </div>
+                    <div class="latest-stat">
+                        <div class="latest-stat-value" id="latest-agent"></div>
+                        <div class="latest-stat-label">Agent</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="history-section" id="history-section" style="display: none;">
+            <h2 class="section-title">推送历史</h2>
+            <div class="history-grid" id="history-grid"></div>
+        </div>
+
+        <!-- 评分和投票区域（示例，实际使用时会动态加载） -->
+        <div class="rating-votes-section" id="rating-votes-section" style="display: none;">
+            <h2 class="section-title">论文评价</h2>
+            
+            <div class="rating-display">
+                <div class="rating-header">
+                    <div class="rating-title">⭐ AI 评分</div>
+                    <button class="rating-edit-btn" data-admin-only style="display:none;" onclick="editRating()">✏️ 编辑</button>
+                </div>
+                <div class="stars" id="rating-stars">⭐⭐⭐⭐⭐</div>
+                <div class="score-details" id="rating-details">
+                    <div class="score-item">
+                        <div class="score-value" id="score-overall">8.5</div>
+                        <div class="score-label">综合</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-value" id="score-innovation">9.0</div>
+                        <div class="score-label">创新</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-value" id="score-practicality">7.5</div>
+                        <div class="score-label">实用</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-value" id="score-quality">8.0</div>
+                        <div class="score-label">质量</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-value" id="score-impact">9.0</div>
+                        <div class="score-label">影响</div>
+                    </div>
+                </div>
+                <div class="rating-reason" id="rating-reason">
+                    提出了有效的优化方法，在多个基准测试中取得了 SOTA 结果...
+                </div>
+            </div>
+            
+            <div class="votes-display">
+                <button class="vote-btn up" onclick="vote('up')">
+                    👍 <span class="vote-count" id="up-count">0</span>
+                </button>
+                <button class="vote-btn down" onclick="vote('down')">
+                    👎 <span class="vote-count" id="down-count">0</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 加载状态 -->
+        <div class="loading-state" id="loading-state" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>加载中...</p>
+        </div>
+
+        <!-- 空状态 -->
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <div class="empty-icon">📭</div>
+            <div class="empty-title">暂无历史推送记录</div>
+            <p>系统将于每天 10:00 自动推送前一天的论文</p>
+        </div>
+
+        <footer>
+            <p>Powered by <a href="/">EvilBot 😈</a> | arxiv-summarizer-orchestrator | Data from arXiv</p>
+            <p style="margin-top: 10px; font-size: 0.85em; color: rgba(255,255,255,0.3);">
+                推送时间：每天 10:00 检索 · 10:30 推送
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+            loadHistory();
+        });
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            fetch('/api/auth.php?action=me')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.user) {
+                        // 已登录
+                        document.querySelector('[data-login-section]').innerHTML = `
+                            <div class="user-info">
+                                👤 ${data.user.username}
+                                <div class="user-dropdown">
+                                    <a href="#" onclick="logout()">退出登录</a>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // 显示管理员功能
+                        if (data.user.role === 'admin') {
+                            document.querySelectorAll('[data-admin-only]').forEach(el => {
+                                el.style.display = 'inline-block';
+                            });
+                        }
+                    }
+                })
+                .catch(err => console.error('登录状态检查失败:', err));
+        }
+
+        // 退出登录
+        function logout() {
+            fetch('/api/auth.php?action=logout', { method: 'POST' })
+                .then(() => location.reload());
+        }
+
+        // 投票功能
+        async function vote(voteType) {
+            // 这里可以获取当前选中的论文 ID，暂时使用示例
+            const arxivId = getSelectedPaperId();
+            if (!arxivId) {
+                alert('请先选择一篇论文');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/papers/votes.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        arxiv_id: arxivId,
+                        vote_type: voteType
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 更新显示
+                    loadRatingAndVotes(arxivId);
+                    alert(result.action === 'updated' ? '✓ 已更新投票' : '✓ 投票成功');
+                } else {
+                    alert('投票失败：' + (result.error || '未知错误'));
+                }
+            } catch (error) {
+                console.error('投票失败:', error);
+                alert('投票失败，请稍后重试');
+            }
+        }
+
+        // 编辑评分（仅管理员）
+        function editRating() {
+            const arxivId = getSelectedPaperId();
+            if (!arxivId) {
+                alert('请先选择一篇论文');
+                return;
+            }
+            // 打开评分编辑对话框（简化版本，实际可弹出表单）
+            const reason = prompt('输入评分理由:');
+            if (reason !== null) {
+                submitRating(arxivId, reason);
+            }
+        }
+
+        // 提交评分
+        async function submitRating(arxivId, reason) {
+            const overall = prompt('综合评分 (1-10):', '8');
+            if (!overall) return;
+            
+            try {
+                const response = await fetch('/api/papers/ratings.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        arxiv_id: arxivId,
+                        overall: parseInt(overall),
+                        reason: reason
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✓ 评分已更新');
+                    loadRatingAndVotes(arxivId);
+                } else {
+                    alert('评分失败：' + (result.error || '未知错误'));
+                }
+            } catch (error) {
+                console.error('评分失败:', error);
+                alert('评分失败，请稍后重试');
+            }
+        }
+
+        // 获取当前选中的论文 ID（从 URL 或选择状态）
+        function getSelectedPaperId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('paper') || null;
+        }
+
+        // 加载评分和投票数据
+        async function loadRatingAndVotes(arxivId) {
+            if (!arxivId) return;
+            
+            try {
+                const response = await fetch(`/api/papers/ratings.php/${arxivId}`);
+                const data = await response.json();
+                
+                if (data.rating) {
+                    // 显示评分区域
+                    document.getElementById('rating-votes-section').style.display = 'block';
+                    
+                    // 更新星级
+                    const stars = Math.round(data.rating.overall / 2);
+                    document.getElementById('rating-stars').textContent = '⭐'.repeat(stars) + '☆'.repeat(5 - stars);
+                    
+                    // 更新分数
+                    document.getElementById('score-overall').textContent = data.rating.overall;
+                    document.getElementById('score-innovation').textContent = data.rating.innovation || data.rating.overall;
+                    document.getElementById('score-practicality').textContent = data.rating.practicality || data.rating.overall;
+                    document.getElementById('score-quality').textContent = data.rating.quality || data.rating.overall;
+                    document.getElementById('score-impact').textContent = data.rating.impact || data.rating.overall;
+                    
+                    // 更新理由
+                    document.getElementById('rating-reason').textContent = data.rating.reason || '暂无评价理由';
+                }
+                
+                // 更新投票数
+                if (data.votes) {
+                    document.getElementById('up-count').textContent = data.votes.up || 0;
+                    document.getElementById('down-count').textContent = data.votes.down || 0;
+                }
+            } catch (error) {
+                console.error('加载评分失败:', error);
+            }
+        }
+
+        async function loadHistory() {
+            // 显示加载状态
+            document.getElementById('loading-state').style.display = 'block';
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('stats-grid').style.display = 'none';
+            document.getElementById('latest-section').style.display = 'none';
+            document.getElementById('history-section').style.display = 'none';
+            
+            try {
+                const response = await fetch('./reports.json');
+                if (!response.ok) throw new Error('Failed to load reports');
+                
+                const reports = await response.json();
+                
+                // 隐藏加载状态
+                document.getElementById('loading-state').style.display = 'none';
+                
+                if (!reports || reports.length === 0) {
+                    showEmptyState();
+                    return;
+                }
+
+                updateStats(reports);
+
+                if (reports.length > 0) {
+                    showLatest(reports[0]);
+                }
+
+                if (reports.length > 1) {
+                    showHistory(reports.slice(1));
+                }
+
+            } catch (error) {
+                console.error('加载失败:', error);
+                document.getElementById('loading-state').style.display = 'none';
+                showEmptyState();
+            }
+        }
+
+        function updateStats(reports) {
+            const totalPapers = reports.reduce((sum, r) => sum + (r.count || 0), 0);
+            const totalDays = reports.length;
+            const avgPapers = Math.round(totalPapers / totalDays);
+
+            const statsGrid = document.getElementById('stats-grid');
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${totalDays}</div>
+                    <div class="stat-label">推送天数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${totalPapers}</div>
+                    <div class="stat-label">累计论文</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${avgPapers}</div>
+                    <div class="stat-label">日均论文</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${reports[0]?.count || 0}</div>
+                    <div class="stat-label">最新推送</div>
+                </div>
+            `;
+        }
+
+        function showLatest(report) {
+            const section = document.getElementById('latest-section');
+            const card = document.getElementById('latest-card');
+            
+            card.href = report.detail_url || `detail.html?date=${report.date}`;
+            document.getElementById('latest-date').textContent = `📅 ${report.date}`;
+            document.getElementById('latest-count').textContent = report.count;
+            
+            section.style.display = 'block';
+        }
+
+        function showHistory(reports) {
+            const section = document.getElementById('history-section');
+            const grid = document.getElementById('history-grid');
+            
+            const html = reports.map(report => `
+                <a href="${report.detail_url || `detail.html?date=${report.date}`}" class="history-card">
+                    <div class="history-date">📅 ${report.date}</div>
+                    <div class="history-stats">
+                        <span class="history-stat">📄 ${report.count} 篇</span>
+                    </div>
+                </a>
+            `).join('');
+            
+            grid.innerHTML = html;
+            section.style.display = 'block';
+        }
+
+        function showEmptyState() {
+            document.getElementById('empty-state').style.display = 'block';
+            document.getElementById('stats-grid').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

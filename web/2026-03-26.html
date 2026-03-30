@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日论文推送 2026-03-26 - 无新论文</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #a855f7;
+            --secondary: #6366f1;
+            --accent: #ec4899;
+            --glow: #c084fc;
+            --bg-dark: #0f0c29;
+            --card-bg: rgba(30, 30, 50, 0.8);
+        }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a1a2e);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #fff;
+            padding: 40px 20px;
+        }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .emoji {
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #fff, var(--glow), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.8;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            margin-top: 40px;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="emoji">😅</div>
+        <h1>今天没有新论文</h1>
+        <div class="card">
+            <p>arXiv 今天没有新的 <strong>LLM / AI Agent / Transformer / Attention</strong> 相关论文发布。</p>
+            <p style="margin-top: 20px;">明天再来看看吧～</p>
+        </div>
+    </div>
+</body>
+</html>
