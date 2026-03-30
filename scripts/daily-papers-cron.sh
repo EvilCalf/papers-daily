@@ -32,12 +32,13 @@ PUSH_DATE=$(date +%Y-%m-%d)          # 推送日期（今天）
 TO_DATE=$(date -d "yesterday" +%Y-%m-%d)     # 检索结束日期（昨天）
 DAY_OF_WEEK=$(date +%u)              # 星期几（1=周一，7=周日）
 
-# 周一检索 3 天（周五到周日），周二到周五检索 1 天（昨天）
+# 周一检索上周五的论文（arXiv 周末不更新），周二到周五检索 1 天（昨天）
 if [ "$DAY_OF_WEEK" -eq 1 ]; then
-    # 周一：检索 3 天（周五、周六、周日）
+    # 周一：检索上周五的论文（arXiv 周末不更新，周五是最近的发布日）
     FROM_DATE=$(date -d "3 days ago" +%Y-%m-%d)
-    LOOKBACK="3d"
-    log "📅 周一：检索 3 天范围（$FROM_DATE 到 $TO_DATE）"
+    TO_DATE=$FROM_DATE  # 只检索周五当天
+    LOOKBACK="1d"
+    log "📅 周一：检索上周五的论文（$FROM_DATE）"
 elif [ "$DAY_OF_WEEK" -eq 6 ] || [ "$DAY_OF_WEEK" -eq 7 ]; then
     # 周末：跳过
     log "🎉 周末时间，跳过推送（arXiv 周末不更新论文）"
@@ -95,7 +96,7 @@ if [ "$PAPER_COUNT" -eq 0 ]; then
     cat > "$TMP_DIR/papers-no-new-${PUSH_DATE}.json" << EOF
 {
     "date": "$PUSH_DATE",
-    "paper_date": "$PAPER_DATE",
+    "paper_date": "$FROM_DATE",
     "status": "no_new_papers",
     "reason": "arXiv 没有相关论文发布"
 }

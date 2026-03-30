@@ -98,13 +98,34 @@ def search_arxiv_combined(combined_query, max_results=250, date_from=None, date_
     
     url = f"{base_url}?{urllib.parse.urlencode(params)}"
     
+    # 自定义请求头，模拟浏览器
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+    }
+    
     try:
-        with urllib.request.urlopen(url, timeout=60) as response:
-            return response.read().decode('utf-8')
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=120) as response:
+            content = response.read().decode('utf-8')
+            if "Rate exceeded" in content:
+                # 速率限制，等待 60 秒后重试
+                wait_time = 120 + (retry_count * 60)  # 指数退避，增加等待时间
+                print(f"⚠️  遇到速率限制 (429)，等待 {wait_time} 秒后重试...（第{retry_count + 1}次）")
+                time.sleep(wait_time)
+                if retry_count < 3:  # 最多重试 3 次，避免无限等待
+                    return search_arxiv_combined(combined_query, max_results, date_from, date_to, retry_count + 1)
+                else:
+                    print(f"❌ 达到最大重试次数，放弃请求")
+                    return None
+            return content
     except urllib.error.HTTPError as e:
-        if e.code == 429:
+        if e.code == 429 or "Rate exceeded" in str(e.reason):
             # 速率限制，等待 60 秒后重试
-            wait_time = 60 + (retry_count * 30)  # 指数退避
+            wait_time = 120 + (retry_count * 60)  # 指数退避
             print(f"⚠️  遇到速率限制 (429)，等待 {wait_time} 秒后重试...（第{retry_count + 1}次）")
             time.sleep(wait_time)
             if retry_count < 3:  # 最多重试 3 次
@@ -210,8 +231,22 @@ def main():
     
     # 计算日期
     if args.from_date and args.to_date:
-        date_from = args.from_date.replace('-', '') + '0000'
-        date_to = args.to_date.replace('-', '') + '2359'
+        # arXiv 的 submittedDate 是 UTC 时间，北京时间比 UTC 早 8 小时
+        # 所以要把北京时间的日期转换成 UTC 日期范围
+        # 例如：北京时间 3月27日 00:00 = UTC 3月26日 16:00
+        # 所以要查询的 UTC 范围应该是 前一天的 16:00 到 当天的 15:59
+        from datetime import datetime, timedelta
+        
+        # 解析北京时间日期
+        dt_from = datetime.strptime(args.from_date, '%Y-%m-%d')
+        dt_to = datetime.strptime(args.to_date, '%Y-%m-%d')
+        
+        # 转换为 UTC 范围：北京时间当天的论文对应 UTC 前一天 16:00 到 当天 15:59
+        utc_from = dt_from - timedelta(hours=8)  # 北京时间 00:00 = UTC 前一天 16:00
+        utc_to = dt_to - timedelta(hours=8) + timedelta(days=1) - timedelta(minutes=1)  # 北京时间 23:59 = UTC 当天 15:59
+        
+        date_from = utc_from.strftime('%Y%m%d%H%M')
+        date_to = utc_to.strftime('%Y%m%d%H%M')
     else:
         yesterday = datetime.now() - timedelta(days=1)
         date_from = yesterday.strftime("%Y%m%d") + '0000'
@@ -250,7 +285,7 @@ def main():
         else:
             print("❌ 失败")
         
-        time.sleep(0.5)  # 避免请求太快
+        time.sleep(5)  # 避免请求太快，增加等待时间到5秒
         print()
     
     # 去重

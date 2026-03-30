@@ -16,6 +16,7 @@ evaluate-paper-quality.py - AI 论文质量评分
 
 import json
 import argparse
+import time
 from pathlib import Path
 import subprocess
 import sys
@@ -23,6 +24,7 @@ from datetime import datetime
 import urllib.request
 import urllib.error
 import requests
+import json_repair
 
 # 项目路径
 WORKSPACE = Path.home() / ".openclaw" / "workspace"
@@ -178,8 +180,11 @@ def evaluate_single_paper_llm(paper_info, language="Chinese"):
 - 纯理论无实验：最高 5 分
 - 只在 1 个数据集上验证：最高 6 分
 
-**输出格式**（严格遵守，只返回一行）：
-分数：[1-10 的数字] 理由：[1 句话说明评分理由]
+**输出格式**（严格遵守，只返回 JSON，不要其他内容）：
+{{
+  "analysis": "100字以内的简短分析，说明论文核心特点",
+  "score": 1-10的整数分数
+}}
 
 请评估："""
     else:
@@ -213,56 +218,79 @@ def evaluate_single_paper_llm(paper_info, language="Chinese"):
 
 Please evaluate:"""
     
-    # 调用 ARK API（字节跳动豆包）
-    try:
-        url = "https://ark.cn-beijing.volces.com/api/coding/v1/chat/completions"
+    # 调用 ARK API（字节跳动豆包）带重试机制
+    max_retries = 3
+    retry_delay = 10  # 10秒重试间隔
+    
+    for attempt in range(max_retries):
+        try:
+            url = "https://ark.cn-beijing.volces.com/api/coding/v1/chat/completions"
+            
+            headers = {
+                "Authorization": f"Bearer {ARK_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            
+            payload = {
+                "model": MODEL.split('/')[-1],  # 提取模型 ID（去掉前缀 arkcode/）
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                "temperature": 0.3,
+                "max_tokens": 200
+            }
+            
+            print(f"  📡 调用 API (第 {attempt+1}/{max_retries} 次)...", file=sys.stderr)
+            
+            # 使用 urllib 调用 API
+            data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(url, data=data, headers=headers, method='POST')
+            
+            with urllib.request.urlopen(req, timeout=180) as response:
+                result = json.loads(response.read().decode('utf-8'))
+            
+            print(f"  📡 API 响应：200", file=sys.stderr)
+            
+            llm_response = result.get('choices', [{}])[0].get('message', {}).get('content', '').strip()
+            
+            # 使用 json_repair 解析，自动修复格式错误
+            try:
+                response_data = json_repair.loads(llm_response)
+                score = int(response_data.get('score', 0))
+                reason = response_data.get('analysis', '')
+                
+                # 验证分数范围
+                if 1 <= score <= 10:
+                    return score, reason
+                else:
+                    print(f"  ⚠️  分数超出范围：{score}，重试...", file=sys.stderr)
+                    if attempt < max_retries - 1:
+                        time.sleep(retry_delay)
+                        continue
+            except Exception as e:
+                print(f"  ⚠️  JSON 解析失败：{str(e)}，输出：{llm_response[:50]}...，重试...", file=sys.stderr)
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                    continue
+                    
+        except urllib.error.HTTPError as e:
+            print(f"  ⚠️  API 错误：{e.code}", file=sys.stderr)
+        except urllib.error.URLError as e:
+            print(f"  ⚠️  API 超时或网络错误：{e.reason}", file=sys.stderr)
+        except Exception as e:
+            print(f"  ⚠️  评估失败：{e}", file=sys.stderr)
         
-        headers = {
-            "Authorization": f"Bearer {ARK_API_KEY}",
-            "Content-Type": "application/json"
-        }
-        
-        payload = {
-            "model": MODEL.split('/')[-1],  # 提取模型 ID（去掉前缀 arkcode/）
-            "messages": [
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            "temperature": 0.3,
-            "max_tokens": 200
-        }
-        
-        print(f"  📡 调用 API...", file=sys.stderr)
-        
-        # 使用 urllib 调用 API
-        data = json.dumps(payload).encode('utf-8')
-        req = urllib.request.Request(url, data=data, headers=headers, method='POST')
-        
-        with urllib.request.urlopen(req, timeout=180) as response:
-            result = json.loads(response.read().decode('utf-8'))
-        
-        print(f"  📡 API 响应：200", file=sys.stderr)
-        
-        llm_response = result.get('choices', [{}])[0].get('message', {}).get('content', '').strip()
-        
-        # 解析响应
-        score = parse_score_from_response(llm_response)
-        reason = parse_reason_from_response(llm_response)
-        
-        return score, reason
-        
-    except urllib.error.HTTPError as e:
-        print(f"  ⚠️  API 错误：{e.code}", file=sys.stderr)
-        # 回退到规则评分
-        return evaluate_single_paper_rule_based(paper_info)
-    except urllib.error.URLError as e:
-        print(f"  ⚠️  API 超时或网络错误：{e.reason}", file=sys.stderr)
-        return evaluate_single_paper_rule_based(paper_info)
-    except Exception as e:
-        print(f"  ⚠️  评估失败：{e}", file=sys.stderr)
-        return evaluate_single_paper_rule_based(paper_info)
+        # 重试等待
+        if attempt < max_retries - 1:
+            print(f"  ⏳ 等待 {retry_delay} 秒后重试...", file=sys.stderr)
+            time.sleep(retry_delay)
+    
+    # 所有重试失败，回退到规则评分
+    print(f"  ❌ 所有重试失败，使用规则评分", file=sys.stderr)
+    return evaluate_single_paper_rule_based(paper_info)
 
 
 def evaluate_single_paper(paper_info, language="Chinese"):
@@ -411,11 +439,7 @@ def evaluate_all_papers_parallel(run_dir, min_score=7, language="Chinese", max_w
     # 按分数排序
     filtered.sort(key=lambda x: x['quality_score'], reverse=True)
     
-    # 限制最多 40 篇（防止解读时间过长）
-    MAX_PAPERS = 40
-    if len(filtered) > MAX_PAPERS:
-        print(f"✂️  限制最多 {MAX_PAPERS} 篇（当前 {len(filtered)} 篇，取前 {MAX_PAPERS} 篇高分）")
-        filtered = filtered[:MAX_PAPERS]
+    # 不限制数量，所有评分≥min_score的论文都保留
     
     print(f"\n📈 过滤结果:")
     print(f"  原始：{len(papers)} 篇")
@@ -440,7 +464,7 @@ def evaluate_all_papers_parallel(run_dir, min_score=7, language="Chinese", max_w
 evaluate_all_papers = evaluate_all_papers_parallel
 
 
-def evaluate_all_papers_batched(run_dir, min_score=7, language="Chinese", batch_size=10):
+def evaluate_all_papers_batched(run_dir, min_score=7, language="Chinese", batch_size=10, max_workers=4):
     """
     分批处理版本，每批处理后保存结果并释放内存
     避免 99 篇论文累积导致 OOM
@@ -542,6 +566,7 @@ def main():
     parser = argparse.ArgumentParser(description="AI 论文质量评分")
     parser.add_argument("--run-dir", required=True, help="运行目录")
     parser.add_argument("--min-score", type=int, default=7, help="最低保留分数（默认 7）")
+    parser.add_argument("--max-workers", type=int, default=4, help="并行进程数（默认 4）")
     parser.add_argument("--language", default="Chinese", help="输出语言")
     
     args = parser.parse_args()
@@ -558,7 +583,7 @@ def main():
     
     # 执行评估（使用分批处理版本避免 OOM）
     # 使用更小的 batch_size 防止超时
-    filtered = evaluate_all_papers_batched(run_dir, args.min_score, args.language, batch_size=5)
+    filtered = evaluate_all_papers_batched(run_dir, args.min_score, args.language, batch_size=5, max_workers=args.max_workers)
     
     # 输出结果
     print(f"\n✅ 质量评分完成！")

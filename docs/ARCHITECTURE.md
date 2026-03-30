@@ -86,13 +86,19 @@
 **执行时间**: 每天 10:00  
 **功能**: 检索 arXiv 论文 + 下载 PDF/TeX
 
+**检索规则**：
+- 周一：检索 3 天范围（周五、周六、周日）
+- 周二到周五：检索 1 天（昨天）
+- 周六周日：跳过
+
 ```bash
 #!/bin/bash
-# 调用编排器执行 Stage A（检索）
+# 调用编排器执行
 python3 /root/.openclaw/workspace/projects/papers-daily/scripts/papers-orchestrator.py \
-  --date $(date -d "yesterday" +%Y-%m-%d) \
-  --from-date $(date -d "yesterday" +%Y-%m-%d) \
-  --to-date $(date -d "yesterday" +%Y-%m-%d) \
+  --date $(date +%Y-%m-%d) \
+  --from-date $FROM_DATE \
+  --to-date $TO_DATE \
+  --lookback $LOOKBACK \
   --language Chinese
 ```
 
