@@ -372,7 +372,7 @@ def update_reports_json(papers_data, push_date, date_range, data_dir):
     # 移除同日期记录（如果有）
     reports = [r for r in reports if r['date'] != push_date]
     
-    # 计算 paper_date（论文日期 = 推送日期 - 1 天，周一的话减 3 天）
+    # 计算 paper_date（论文日期：周二到周五 = 推送日期 - 1 天，周一 = 推送日期 - 3 天 = 上周五）
     from datetime import datetime, timedelta
     push_date_obj = datetime.strptime(push_date, "%Y-%m-%d")
     day_of_week = push_date_obj.weekday()  # 0=周一，4=周五，5=周六，6=周日
