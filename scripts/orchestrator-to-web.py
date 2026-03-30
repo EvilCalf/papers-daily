@@ -918,12 +918,19 @@ def main():
         en_title = ''
         core_contribution = ''  # 用作中文副标题
         
-        if snapshot:
-            for line in snapshot.split('\n'):
-                if '- **标题**:' in line:
-                    en_title = line.split(':', 1)[1].strip()
-                elif '- **核心贡献**:' in line:
-                    core_contribution = line.split(':', 1)[1].strip()
+        # 先从 summary.md 里找标题（1. 论文快照 部分）
+        if summary:
+            for section_name, section_content in summary.items():
+                if '论文快照' in section_name or 'Paper Snapshot' in section_name:
+                    for line in section_content.split('\n'):
+                        if '- **标题**:' in line or '- **Title**:' in line:
+                            en_title = line.split(':', 1)[1].strip()
+                        elif '- **核心贡献**:' in line:
+                            core_contribution = line.split(':', 1)[1].strip()
+        
+        # 如果没找到，从 papers_index.json 里补
+        if not en_title and paper:
+            en_title = paper.get('title', '')
         
         # chinese_title 使用核心贡献（中文总结，截取前 100 字）
         chinese_title = core_contribution[:100] + '...' if len(core_contribution) > 100 else core_contribution

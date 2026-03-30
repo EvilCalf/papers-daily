@@ -9,7 +9,7 @@
       "papers": [
         {
           "arxiv_id": "2603.26556v1",
-          "title": "",
+          "title": "When Perplexity Lies: Generation-Focused Distillation of Hybrid Sequence Models",
           "chinese_title": "",
           "published": "2026-03-27",
           "category": "cs.CL",
@@ -24,7 +24,7 @@
         },
         {
           "arxiv_id": "2603.26236v1",
-          "title": "",
+          "title": "A Universal Vibe? Finding and Controlling Language-Agnostic Informal Register with SAEs",
           "chinese_title": "",
           "published": "2026-03-27",
           "category": "cs.CL",
@@ -44,7 +44,7 @@
       "papers": [
         {
           "arxiv_id": "2603.26535v1",
-          "title": "",
+          "title": "Stabilizing Rubric Integration Training via Decoupled Advantage Normalization",
           "chinese_title": "",
           "published": "2026-03-27",
           "category": "cs.AI",
@@ -64,7 +64,7 @@
       "papers": [
         {
           "arxiv_id": "2603.26498v1",
-          "title": "",
+          "title": "Rocks, Pebbles and Sand: Modality-aware Scheduling for Multimodal Large Language Model Inference",
           "chinese_title": "",
           "published": "2026-03-27",
           "category": "cs.DC",
@@ -84,7 +84,7 @@
       "papers": [
         {
           "arxiv_id": "2603.26270v1",
-          "title": "",
+          "title": "Knowdit: Agentic Smart Contract Vulnerability Detection with Auditing Knowledge Summarization",
           "chinese_title": "",
           "published": "2026-03-27",
           "category": "cs.CR",
