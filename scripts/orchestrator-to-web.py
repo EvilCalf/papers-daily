@@ -304,12 +304,9 @@ def generate_json_data(papers_data, push_date, date_range, output_dir):
             # 优先使用 AI 解读的结论作为简要摘要
             brief = conclusion if conclusion else ''
             
-            # 如果 conclusion 为空，回退到 metadata 的英文摘要
+            # 如果 conclusion 为空，回退到中文标题（不再使用英文摘要）
             if not brief or len(brief) < 50:
-                metadata = read_metadata_md(Path(paper.get('paper_dir', '')))
-                abstract = metadata.get('摘要', '')
-                if abstract:
-                    brief = abstract
+                brief = paper.get('chinese_title', '暂无中文摘要')
             
             # 格式化发布时间
             published = paper.get('published', '')
