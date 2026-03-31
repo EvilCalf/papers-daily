@@ -304,9 +304,14 @@ def generate_json_data(papers_data, push_date, date_range, output_dir):
             # 优先使用 AI 解读的结论作为简要摘要
             brief = conclusion if conclusion else ''
             
-            # 如果 conclusion 为空，回退到中文标题（不再使用英文摘要）
+            # 如果 conclusion 为空，依次回退到研究目标、方法概述
             if not brief or len(brief) < 50:
-                brief = paper.get('chinese_title', '暂无中文摘要')
+                brief = research_goal if research_goal else ''
+            if not brief or len(brief) < 50:
+                brief = method if method else ''
+            # 所有解读都为空时才使用默认提示
+            if not brief or len(brief) < 50:
+                brief = '暂无详细摘要，请展开查看完整解读'
             
             # 格式化发布时间
             published = paper.get('published', '')
