@@ -738,8 +738,6 @@
             display: flex;
             gap: 10px;
             margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid rgba(168, 85, 247, 0.2);
         }
         
         .vote-btn {
@@ -956,7 +954,7 @@
                 // 初始化滚动监听
                 initScrollSpy();
                 
-                // 论文渲染完成后，加载评分
+                // 论文渲染完成后，加载投票
                 await loadAllRatingsAndVotes();
             } catch (error) {
                 document.getElementById('content').innerHTML = `<div class="loading">加载失败：${error.message}</div>`;
@@ -1105,7 +1103,7 @@
                             <div class="paper-brief">${paper.brief}</div>
                             <a href="${paper.link}" target="_blank" class="paper-link">📄 查看论文</a>
                             
-                            <!-- 评分和投票区域 -->
+                            <!-- 投票区域 -->
                             <div class="rating-votes-container" id="rating-votes-${idx}" data-arxiv-id="${paper.arxiv_id || ''}">
                                 <div class="loading-rating">加载中...</div>
                             </div>
@@ -1182,7 +1180,7 @@
             }
         }
         
-        // 加载单篇论文的评分和投票（纯前端本地存储版本）
+        // 加载单篇论文的投票（纯前端本地存储版本）
         async function loadRatingAndVotes(container, arxivId) {
             try {
                 // 从localStorage获取投票数据
@@ -1191,19 +1189,7 @@
                 
                 let html = '';
                 
-                // 评分显示（AI评分已经在论文筛选时给出，直接显示8分）
-                html += `<div class="rating-display-mini">`;
-                html += `<div class="rating-header">`;
-                html += `<div class="rating-title">⭐ AI 评分</div>`;
-                html += `</div>`;
-                html += `<div class="stars">⭐⭐⭐⭐☆</div>`;
-                html += `<div class="score-summary">`;
-                html += `<span class="score-tag score-tag-main"><span class="score-tag-value">8.0</span>综合评分</span>`;
-                html += `</div>`;
-                html += `<div class="rating-reason">论文质量较高，具有创新性和实用价值</div>`;
-                html += `</div>`;
-                
-                // 投票显示
+                // 仅显示投票按钮
                 html += `<div class="votes-display">`;
                 html += `<button class="vote-btn up ${userVote === 'up' ? 'voted-up' : ''}" id="vote-up-${arxivId}" onclick="vote('${arxivId}', 'up')">👍 <span class="vote-count" id="up-${arxivId}">${votes.up || 0}</span></button>`;
                 html += `<button class="vote-btn down ${userVote === 'down' ? 'voted-down' : ''}" id="vote-down-${arxivId}" onclick="vote('${arxivId}', 'down')">👎 <span class="vote-count" id="down-${arxivId}">${votes.down || 0}</span></button>`;
@@ -1211,7 +1197,7 @@
                 
                 container.innerHTML = html;
             } catch (error) {
-                console.error('加载评分失败:', error);
+                console.error('加载投票失败:', error);
                 container.innerHTML = '<div class="no-rating">加载失败</div>';
             }
         }
