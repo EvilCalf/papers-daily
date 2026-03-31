@@ -219,6 +219,7 @@ def deduplicate_papers(papers):
 
 def main():
     import argparse
+    from datetime import datetime, timedelta
     
     parser = argparse.ArgumentParser(description="简化的 arXiv 检索")
     parser.add_argument("--date", default=datetime.now().strftime("%Y-%m-%d"), help="推送日期")
@@ -235,7 +236,6 @@ def main():
         # 所以要把北京时间的日期转换成 UTC 日期范围
         # 例如：北京时间 3月27日 00:00 = UTC 3月26日 16:00
         # 所以要查询的 UTC 范围应该是 前一天的 16:00 到 当天的 15:59
-        from datetime import datetime, timedelta
         
         # 解析北京时间日期
         dt_from = datetime.strptime(args.from_date, '%Y-%m-%d')
