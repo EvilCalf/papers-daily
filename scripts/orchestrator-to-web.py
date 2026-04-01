@@ -305,56 +305,20 @@ def generate_json_data(papers_data, push_date, date_range, output_dir):
             metadata = read_metadata_md(Path(paper['paper_dir']))
             original_abstract = metadata.get('摘要', metadata.get('Abstract', ''))
             
-            # 如果是英文摘要，直接翻译
+            # 如果是英文摘要，直接使用已经翻译好的质量理由/核心贡献（避免重复调用API）
             if original_abstract and len(original_abstract) > 50:
                 # 判断是否为英文
                 chinese_chars = sum(1 for c in original_abstract if '\u4e00' <= c <= '\u9fff')
                 if chinese_chars / len(original_abstract) < 0.1:
-                    # 调用豆包API翻译原始英文摘要
-                    import json
-                    import requests
-                    
-                    # 加载API key
-                    config_file = Path.home() / ".openclaw" / "openclaw.json"
-                    if config_file.exists():
-                        with open(config_file, 'r', encoding='utf-8') as f:
-                            config = json.load(f)
-                        api_key = config.get('models', {}).get('providers', {}).get('arkcode', {}).get('apiKey')
-                        
-                        if api_key:
-                            # 构建翻译请求
-                            url = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
-                            headers = {
-                                "Content-Type": "application/json",
-                                "Authorization": f"Bearer {api_key}"
-                            }
-                            payload = {
-                                "model": "arkcode/doubao-seed-2.0-pro",
-                                "messages": [
-                                    {"role": "system", "content": "你是专业的学术翻译，请将以下论文摘要翻译成流畅准确的中文，保留专业术语的准确性，不需要额外解释。"},
-                                    {"role": "user", "content": original_abstract}
-                                ],
-                                "temperature": 0.3
-                            }
-                            
-                            try:
-                                response = requests.post(url, headers=headers, json=payload, timeout=30)
-                                if response.status_code == 200:
-                                    result = response.json()
-                                    translated = result['choices'][0]['message']['content'].strip()
-                                    brief = translated
-                                else:
-                                    # 翻译失败，用质量评分理由兜底
-                                    brief = paper.get('quality_reason', original_abstract)
-                            except Exception as e:
-                                # 翻译出错，用质量评分理由兜底
-                                brief = paper.get('quality_reason', original_abstract)
-                        else:
-                            # 没有API key，用质量评分理由兜底
-                            brief = paper.get('quality_reason', original_abstract)
+                    # 优先用质量评分理由（已经是人工审核过的中文核心摘要）
+                    if paper.get('quality_reason', '') and len(paper['quality_reason']) > 50:
+                        brief = paper['quality_reason']
+                    # 其次用中文标题里的核心贡献
+                    elif paper.get('chinese_title', '') and len(paper['chinese_title']) > 50:
+                        brief = paper['chinese_title']
+                    # 兜底用原始英文
                     else:
-                        # 没有配置文件，用质量评分理由兜底
-                        brief = paper.get('quality_reason', original_abstract)
+                        brief = original_abstract
                 else:
                     # 已经是中文摘要，直接使用
                     brief = original_abstract
