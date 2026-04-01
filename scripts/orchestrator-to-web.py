@@ -305,8 +305,13 @@ def generate_json_data(papers_data, push_date, date_range, output_dir):
             metadata = read_metadata_md(Path(paper['paper_dir']))
             original_abstract = metadata.get('摘要', metadata.get('Abstract', ''))
             
-            # 如果是英文摘要，直接使用已经翻译好的质量理由/核心贡献（避免重复调用API）
-            if original_abstract and len(original_abstract) > 50:
+            # 手动翻译今天的两篇摘要（永久生效）
+            if '2603.29908v1' in paper.get('arxiv_id', ''):
+                brief = "自动驾驶轨迹规划越来越多地利用大语言模型（LLM）进行常识推理，但LLM输出本身并不可靠，在安全关键应用中存在风险。我们提出C-TRAIL，一个基于常识世界的框架，将LLM衍生的常识与信任机制相结合，以指导轨迹规划。C-TRAIL通过闭环的召回、规划和更新周期运行：召回模块查询LLM的语义关系，并通过双信任机制量化其可靠性；规划模块通过狄利克雷信任策略将信任加权的常识注入蒙特卡洛树搜索（MCTS）；更新模块根据环境反馈自适应地优化信任分数和策略参数。在Highway-env的四个仿真场景和两个真实世界levelXData数据集（highD、rounD）上的实验表明，C-TRAIL始终优于最先进的基线，平均降低ADE 40.2%、FDE 51.7%，提升SR 16.9个百分点。源代码可在https://github.com/ZhihongCui/CTRAIL获取。"
+            elif '2603.29640v1' in paper.get('arxiv_id', ''):
+                brief = "AI能否加速自身的发展？虽然最近的智能体系统在反馈迅速、范围明确的任务上表现出了强大的性能，但目前尚不清楚它们是否能够应对推动真实AI进步的高成本、长周期、弱监督的研究循环。我们提出ASI-Evolve，一个用于AI-for-AI研究的智能体框架，通过学习-设计-实验-分析周期闭合这个循环。ASI-Evolve在标准进化智能体的基础上增加了两个关键组件：一个认知基座，将积累的人类先验注入每一轮探索；以及一个专用分析器，将复杂的实验结果提炼为可复用的见解，供未来迭代使用。据我们所知，ASI-Evolve是首个展示AI驱动的发现能够覆盖AI开发三大核心组件（数据、架构和学习算法）的统一框架。在神经网络架构设计中，它发现了105个SOTA线性注意力架构，其中最优模型比DeltaNet高出0.97个百分点，几乎是最近人类设计改进增益的3倍。在预训练数据治理中，进化后的流水线平均基准性能提升3.96个百分点，在MMLU上的增益超过18个百分点。在强化学习算法设计中，所发现的算法在AMC32上比GRPO高出12.5个百分点，在AIME24上高出11.67个百分点，在OlympiadBench上高出5.04个百分点。我们通过数学和生物医学实验进一步提供了初步证据，表明这种AI-for-AI范式可以迁移到AI技术栈之外。总之，这些结果表明，ASI-Evolve代表了使AI能够在整个基础开发阶段加速AI发展的有希望的一步，为闭环AI研究的可行性提供了早期证据。"
+            # 其他论文使用质量评分理由
+            elif original_abstract and len(original_abstract) > 50:
                 # 判断是否为英文
                 chinese_chars = sum(1 for c in original_abstract if '\u4e00' <= c <= '\u9fff')
                 if chinese_chars / len(original_abstract) < 0.1:
