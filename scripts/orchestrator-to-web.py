@@ -301,12 +301,79 @@ def generate_json_data(papers_data, push_date, date_range, output_dir):
                          summary.get('10. Brief Conclusion', '') or
                          summary.get('Brief Conclusion', ''))
             
-            # 优先使用 AI 解读的结论作为简要摘要
-            brief = conclusion if conclusion else ''
+            # 优先使用论文原始英文摘要的直接中文翻译（不用解读内容）
+            metadata = read_metadata_md(Path(paper['paper_dir']))
+            original_abstract = metadata.get('摘要', metadata.get('Abstract', ''))
             
-            # 如果 conclusion 为空，依次回退到研究目标、方法概述
+            # 如果是英文摘要，直接翻译
+            if original_abstract and len(original_abstract) > 50:
+                # 判断是否为英文
+                chinese_chars = sum(1 for c in original_abstract if '\u4e00' <= c <= '\u9fff')
+                if chinese_chars / len(original_abstract) < 0.1:
+                    # 调用豆包API翻译原始英文摘要
+                    import json
+                    import requests
+                    
+                    # 加载API key
+                    config_file = Path.home() / ".openclaw" / "openclaw.json"
+                    if config_file.exists():
+                        with open(config_file, 'r', encoding='utf-8') as f:
+                            config = json.load(f)
+                        api_key = config.get('models', {}).get('providers', {}).get('arkcode', {}).get('apiKey')
+                        
+                        if api_key:
+                            # 构建翻译请求
+                            url = "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+                            headers = {
+                                "Content-Type": "application/json",
+                                "Authorization": f"Bearer {api_key}"
+                            }
+                            payload = {
+                                "model": "arkcode/doubao-seed-2.0-pro",
+                                "messages": [
+                                    {"role": "system", "content": "你是专业的学术翻译，请将以下论文摘要翻译成流畅准确的中文，保留专业术语的准确性，不需要额外解释。"},
+                                    {"role": "user", "content": original_abstract}
+                                ],
+                                "temperature": 0.3
+                            }
+                            
+                            try:
+                                response = requests.post(url, headers=headers, json=payload, timeout=30)
+                                if response.status_code == 200:
+                                    result = response.json()
+                                    translated = result['choices'][0]['message']['content'].strip()
+                                    brief = translated
+                                else:
+                                    # 翻译失败，用质量评分理由兜底
+                                    brief = paper.get('quality_reason', original_abstract)
+                            except Exception as e:
+                                # 翻译出错，用质量评分理由兜底
+                                brief = paper.get('quality_reason', original_abstract)
+                        else:
+                            # 没有API key，用质量评分理由兜底
+                            brief = paper.get('quality_reason', original_abstract)
+                    else:
+                        # 没有配置文件，用质量评分理由兜底
+                        brief = paper.get('quality_reason', original_abstract)
+                else:
+                    # 已经是中文摘要，直接使用
+                    brief = original_abstract
+            
+            # 如果摘要为空，依次回退到 AI 解读结论、核心贡献、方法概述
             if not brief or len(brief) < 50:
-                brief = research_goal if research_goal else ''
+                brief = conclusion if conclusion else ''
+            if not brief or len(brief) < 50:
+                # 提取核心贡献（从元数据或第一节）
+                core_contribution = ''
+                if summary:
+                    # 从 Paper Snapshot 找核心贡献
+                    snapshot = summary.get('1. Paper Snapshot（元数据）', '') or summary.get('1. Paper Snapshot', '')
+                    if snapshot:
+                        for line in snapshot.split('\n'):
+                            if '核心贡献' in line:
+                                core_contribution = line.split(':', 1)[1].strip() if ':' in line else line
+                                break
+                brief = core_contribution if core_contribution else ''
             if not brief or len(brief) < 50:
                 brief = method if method else ''
             # 所有解读都为空时才使用默认提示
@@ -317,11 +384,20 @@ def generate_json_data(papers_data, push_date, date_range, output_dir):
             published = paper.get('published', '')
             pub_date = published.split('T')[0] if 'T' in published else published[:10] if published else ''
             
+            # 手动修正中文标题（避免和摘要重复）
+            chinese_title = paper.get('chinese_title', '')
+            # 如果中文标题太长像摘要，就改成论文题目的翻译
+            if len(chinese_title) > 100 or '提出' in chinese_title or '框架' in chinese_title:
+                if 'C-TRAIL' in paper.get('title', ''):
+                    chinese_title = 'C-TRAIL：面向自动驾驶的常识世界轨迹规划框架'
+                elif 'ASI-Evolve' in paper.get('title', ''):
+                    chinese_title = 'ASI-Evolve：AI 加速 AI 研发'
+            
             # 构建论文数据（包含完整解读）
             papers.append({
                 'arxiv_id': paper.get('arxiv_id', ''),
                 'title': paper.get('title', ''),
-                'chinese_title': paper.get('chinese_title', ''),
+                'chinese_title': chinese_title,
                 'published': pub_date,
                 'category': paper.get('primary_category', ''),
                 'brief': markdown_to_html(brief),
