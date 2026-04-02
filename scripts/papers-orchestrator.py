@@ -232,7 +232,7 @@ def stage_a_quality_filter(run_dir, min_score=9, language="Chinese"):
             "--language", language
         ]
         
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
         
         if result.returncode != 0:
             raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
